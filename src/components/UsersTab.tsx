@@ -76,6 +76,7 @@ export default function UsersTab({}: UsersTabProps) {
     } finally {
       setLoading(false);
     }
+  };
 
   const fetchPositions = async () => {
     try {
@@ -84,7 +85,7 @@ export default function UsersTab({}: UsersTabProps) {
         .select('id, name, is_active')
         .eq('is_active', true)
         .order('name', { ascending: true });
-      
+
       if (error) throw error;
       setPositions(data || []);
       console.log('[UsersTab] Loaded positions:', data?.length || 0);
@@ -100,14 +101,13 @@ export default function UsersTab({}: UsersTabProps) {
         .select('id, name, is_active')
         .eq('is_active', true)
         .order('name', { ascending: true });
-      
+
       if (error) throw error;
       setDepartments(data || []);
       console.log('[UsersTab] Loaded departments:', data?.length || 0);
     } catch (error) {
       console.error('[UsersTab] Error fetching departments:', error);
     }
-  };
   };
 
   useEffect(() => {

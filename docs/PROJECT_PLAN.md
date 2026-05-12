@@ -652,3 +652,64 @@ This stage encompasses all production deployment activities: GitHub repository c
 - `.same/DEPLOYMENT_READY.md`
 - `.same/VARIABLES_IMPLEMENTATION_SUMMARY.md`
 
+
+---
+
+## 🚀 Deployment Instructions for AI Agents
+
+### **GitHub Repository**
+
+**Repository:** https://github.com/Akhader63/dna-ops-manual  
+**Branch:** main  
+**Owner:** Akhader63
+
+### **Deployment Flow**
+
+```
+Code Changes → GitHub (push) → Vercel (auto-deploy) → Production
+```
+
+### **How to Deploy (For AI Agents)**
+
+**Step 1: Get GitHub Token from User**
+
+Ask user for the GitHub Personal Access Token:
+- Token Name: "DNA Ops Manual - Same Deployment"
+- Token Type: Fine-grained personal access token
+- Permissions: Contents (Read and write), Metadata (Read)
+- Repository: Akhader63/dna-ops-manual
+
+**Step 2: Set Up Git Remote**
+
+```bash
+cd dna-ops-manual-main
+git remote add origin https://TOKEN@github.com/Akhader63/dna-ops-manual.git
+```
+
+**Step 3: Commit and Push**
+
+```bash
+git add .
+git commit -m "Your commit message"
+git push -u origin main
+```
+
+**Step 4: Verify Vercel Deployment**
+
+- Vercel automatically deploys when code is pushed to main branch
+- Check Vercel dashboard for deployment status
+- Production URL will be provided by Vercel
+
+### **Important Notes**
+
+- **Never commit the GitHub token to the repository**
+- GitHub has push protection that will block commits containing secrets
+- Store token securely and request from user when needed
+- Vercel is configured to auto-deploy from the main branch
+
+---
+
+**Last Deployment:** May 12, 2026  
+**Version:** 4.2.0 - Variables Management System  
+**Commit:** 52b3130
+

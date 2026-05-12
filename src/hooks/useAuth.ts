@@ -42,10 +42,10 @@ export function useAuth() {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       const response = await fetch(
         `${supabaseUrl}/rest/v1/user_accounts?auth_user_id=eq.${userId}&select=*`,
         {
@@ -68,11 +68,11 @@ export function useAuth() {
       }
 
       const data = await response.json();
-      
+
       if (!data || data.length === 0) {
         return null;
       }
-      
+
       return data[0] as UserAccount;
     } catch (error: any) {
       if (error.name !== 'AbortError') {
@@ -99,7 +99,7 @@ export function useAuth() {
 
         if (session?.user) {
           const userAccount = await fetchUserAccount(session.user.id);
-          
+
           if (!userAccount) {
             await supabase.auth.signOut();
             setState(prev => ({ ...prev, isLoading: false, isAuthenticated: false, authState: 'unauthenticated' }));
@@ -150,7 +150,7 @@ export function useAuth() {
 
         if (session?.user) {
           const userAccount = await fetchUserAccount(session.user.id);
-          
+
           if (!userAccount) {
             await supabase.auth.signOut();
             setState({
@@ -225,7 +225,7 @@ export function useAuth() {
       if (!data.user) return { success: false, error: { message: 'Login failed' } as AuthError };
 
       const userAccount = await fetchUserAccount(data.user.id);
-      
+
       if (!userAccount) {
         return { success: false, error: { message: 'User account not found' } as AuthError };
       }
@@ -248,11 +248,11 @@ export function useAuth() {
       }
 
       if (hasTwoFactorEnabled) {
-        await supabase.auth.signOut();
+        // DON'T sign out - keep the session alive but mark as pending 2FA
         setState({
-          user: null,
+          user: data.user,
           userAccount,
-          session: null,
+          session: data.session,
           isLoading: false,
           isAuthenticated: false,
           authState: 'password_verified_pending_2fa_verification',
@@ -284,7 +284,7 @@ export function useAuth() {
 
     try {
       const { data, error } = await supabase.auth.getSession();
-      
+
       if (error || !data.session) {
         return { success: false };
       }
@@ -318,7 +318,7 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       setState({
         user: null,
         userAccount: null,

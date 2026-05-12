@@ -8,11 +8,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TwoFactorService } from '@/services/twoFactorService';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function TwoFactorVerify() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const { completeTwoFactorLogin } = useAuth();
+
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,40 +70,32 @@ export default function TwoFactorVerify() {
       );
 
       if (result.success) {
-        // Code verified! Now we need to get a temporary password to re-authenticate
-        // In a production app, you'd want to use a better approach (session tokens, etc.)
-        // For now, we'll create a session using the admin API
-        
-        // Get the user's email from the database
-        const { data: userData } = await supabase
-          .from('user_accounts')
-          .select('email')
-          .eq('id', userId)
-          .single();
+        // Code verified! Now complete the login by marking the session as fully authenticated
+        const loginResult = await completeTwoFactorLogin();
 
-        if (userData?.email) {
+        if (loginResult.success) {
           // Clear pending data
           localStorage.removeItem('pending_2fa_user');
-          localStorage.setItem('2fa_verified', 'true');
-          
-          toast.success('Verification successful!');
-          
-          // Redirect to login to complete the flow
-          // The user will need to re-enter their password
-          // In production, you'd use a session token instead
+
+          toast.success('Verification successful! Redirecting...');
+
+          // Redirect to dashboard or intended destination
           const from = (location.state as any)?.from?.pathname || '/';
           navigate(from);
+        } else {
+          setError('Session expired. Please log in again.');
+          setTimeout(() => navigate('/login'), 2000);
         }
       } else {
         setAttemptCount(prev => prev + 1);
         const attemptsLeft = MAX_ATTEMPTS - attemptCount - 1;
-        
+
         if (attemptsLeft > 0) {
           setError(`${result.error}. ${attemptsLeft} attempt${attemptsLeft > 1 ? 's' : ''} remaining.`);
         } else {
           setError('Too many failed attempts. Your account has been temporarily locked. Please try again in 15 minutes.');
         }
-        
+
         setCode('');
       }
     } catch (err) {
@@ -168,7 +162,7 @@ export default function TwoFactorVerify() {
                 maxLength={useRecoveryCode ? 8 : 6}
                 value={code}
                 onChange={(e) => {
-                  const value = useRecoveryCode 
+                  const value = useRecoveryCode
                     ? e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
                     : e.target.value.replace(/[^0-9]/g, '');
                   setCode(value);

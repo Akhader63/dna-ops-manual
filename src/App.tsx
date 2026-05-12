@@ -24,6 +24,7 @@ import IssuesTracker from './pages/IssuesTracker';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import DebugAuth from './pages/DebugAuth';
+import EnvCheck from './pages/EnvCheck';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/debug-auth" element={<DebugAuth />} />
+        <Route path="/env-check" element={<EnvCheck />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

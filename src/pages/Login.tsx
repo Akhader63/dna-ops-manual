@@ -3,20 +3,37 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { Building2, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { TwoFactorService } from '@/services/twoFactorService';
+import { Building2, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { toast } from 'sonner';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { signIn, isAuthenticated, isLoading: authLoading, authState } = useAuth();
+  const { signIn, completeTwoFactorLogin, isAuthenticated, isLoading: authLoading, authState } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 2FA Modal State
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [pending2FAUserId, setPending2FAUserId] = useState<string | null>(null);
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -25,12 +42,10 @@ export default function Login() {
     }
   }, [isAuthenticated, authLoading, authState, navigate]);
 
-  // Handle redirects for 2FA states
+  // Handle redirect for 2FA setup (consultants who haven't set up 2FA yet)
   useEffect(() => {
     if (authState === 'password_verified_pending_2fa_setup') {
       navigate('/2fa-setup');
-    } else if (authState === 'password_verified_pending_2fa_verification') {
-      navigate('/2fa-verify');
     }
   }, [authState, navigate]);
 
@@ -71,7 +86,7 @@ export default function Login() {
       // Proceed with normal login
       const result = await signIn(email, password);
 
-      setIsLoading(false); // Always stop loading after signIn completes
+      setIsLoading(false);
 
       if (result.success) {
         // Successfully logged in (no 2FA required)
@@ -80,9 +95,11 @@ export default function Login() {
         // Consultant user needs to set up 2FA
         // The useEffect will handle navigation to /2fa-setup
       } else if (result.requiresVerification) {
-        // Store pending user data for 2FA verification
-        localStorage.setItem("pending_2fa_user", JSON.stringify({ userId: result.userId, email }));
-        // The useEffect will handle navigation to /2fa-verify
+        // Show 2FA modal instead of redirecting
+        setPending2FAUserId(result.userId!);
+        setShow2FAModal(true);
+        setTwoFactorCode('');
+        setTwoFactorError(null);
       } else {
         // Login failed
         setError(result.error?.message || 'Login failed. Please check your credentials.');
@@ -91,6 +108,60 @@ export default function Login() {
       setError('An error occurred. Please try again.');
       setIsLoading(false);
     }
+  };
+
+  const handle2FAVerification = async () => {
+    if (twoFactorCode.length !== 6) {
+      setTwoFactorError('Please enter a 6-digit code');
+      return;
+    }
+
+    if (!pending2FAUserId) {
+      setTwoFactorError('Session expired. Please login again.');
+      return;
+    }
+
+    setIsVerifying2FA(true);
+    setTwoFactorError(null);
+
+    try {
+      // Verify the 2FA code
+      const verificationResult = await TwoFactorService.verifyTwoFactorLogin(
+        pending2FAUserId,
+        twoFactorCode,
+        false
+      );
+
+      if (!verificationResult.success) {
+        setTwoFactorError(verificationResult.error || 'Invalid code. Please try again.');
+        setIsVerifying2FA(false);
+        setTwoFactorCode('');
+        return;
+      }
+
+      // Complete the login process
+      const loginResult = await completeTwoFactorLogin();
+
+      if (loginResult.success) {
+        toast.success('Login successful!');
+        setShow2FAModal(false);
+        navigate('/');
+      } else {
+        setTwoFactorError('Failed to complete login. Please try again.');
+      }
+    } catch (error) {
+      console.error('2FA verification error:', error);
+      setTwoFactorError('An error occurred during verification. Please try again.');
+    } finally {
+      setIsVerifying2FA(false);
+    }
+  };
+
+  const handle2FACancel = () => {
+    setShow2FAModal(false);
+    setTwoFactorCode('');
+    setTwoFactorError(null);
+    setPending2FAUserId(null);
   };
 
   // Show loading state while checking authentication
@@ -215,6 +286,83 @@ export default function Login() {
           <p>© 2026 DNA Advisory. All rights reserved.</p>
         </div>
       </motion.div>
+
+      {/* 2FA Verification Modal */}
+      <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-dna-pomegranate/10 rounded-full flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-dna-pomegranate" />
+              </div>
+            </div>
+            <DialogTitle className="text-center">Two-Factor Authentication</DialogTitle>
+            <DialogDescription className="text-center">
+              Enter the 6-digit code from your authenticator app
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* 2FA Error */}
+            {twoFactorError && (
+              <Alert variant="destructive">
+                <AlertCircle size={16} />
+                <AlertDescription>{twoFactorError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* OTP Input */}
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={twoFactorCode}
+                onChange={(value) => setTwoFactorCode(value)}
+                disabled={isVerifying2FA}
+                onComplete={handle2FAVerification}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+
+            <p className="text-xs text-center text-dna-silver">
+              The code will auto-verify when you enter all 6 digits
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handle2FACancel}
+                disabled={isVerifying2FA}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-dna-pomegranate hover:bg-dna-pomegranate/90"
+                onClick={handle2FAVerification}
+                disabled={isVerifying2FA || twoFactorCode.length !== 6}
+              >
+                {isVerifying2FA ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

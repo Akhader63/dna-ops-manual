@@ -1,38 +1,83 @@
 # DNA Ops Manual - Development Todos
 
-## ✅ VARIABLES MANAGEMENT SYSTEM - 100% COMPLETE!
+## 🎯 CURRENT PRIORITY - 2FA Modal Implementation
 
-### 📋 Task: Settings → Variables Module - COMPLETED
+### Phase 1: 2FA Modal Dialog (IN PROGRESS)
+- [x] Create 2FA modal component in Login page
+- [x] Update signIn flow to show modal instead of redirect
+- [x] Add 2FA code input with OTP component
+- [x] Implement verification logic in modal
+- [x] Remove redirect to /2fa-verify page
+- [x] Keep session alive during 2FA verification
+- [ ] Test complete flow: login → modal → dashboard
+- [ ] Push to GitHub and deploy to Vercel
 
-**Goal:** Implement predefined Position and Department variables for user management
+**User Requirement:**
+- When user enters credentials and 2FA is required, show modal/dialog on same page
+- Verify 2FA code in modal
+- Land in Dashboard after successful verification
 
-**Progress:**
-- [x] Create database tables (positions, departments)  
-- [x] Set up RLS policies for Super Admin access
-- [x] Create VariablesTab component
-- [x] Create PositionManagement component (Level 2)
-- [x] Create DepartmentManagement component (Level 2)
-- [x] Update Settings.tsx to add Variables tab
-- [x] Update UsersTab to use dropdowns instead of text inputs
-- [x] Test complete flow
-- [x] Build successful
-- [ ] Deploy to production
-- [ ] Update PROJECT_PLAN.md to Version 4.2.0 (Final)
-
-**Features Implemented:**
-- ✅ Navigation: Settings → Variables → Users → Position/Department
-- ✅ Super Admin only access
-- ✅ Full CRUD operations with usage-based delete protection
-- ✅ Active/Inactive status management
-- ✅ Real-time usage count display
-- ✅ Integration with Add/Edit User forms (dropdowns working)
-- ✅ Foreign key relationships established
-- ✅ Backwards compatibility with existing data
-
-**Version Target:** 4.2.0
-
-**Current Status:** Variables Management 100% Complete - Ready for Deployment! 🎉
+**Status:** Code complete, ready for testing and deployment
 
 ---
 
-**Last Updated:** May 12, 2026 - Variables Management COMPLETE
+## 🔧 Phase 2: UsersTab Fix (NEXT)
+
+### Critical Bug Fix
+- [ ] Fix "SelectTrigger is not defined" error in UsersTab
+- [ ] Check Select component imports
+- [ ] Verify all shadcn/ui Select components are properly imported
+- [ ] Test Users tab functionality
+- [ ] Deploy fix to Vercel
+
+---
+
+## 📊 Phase 3: Variables Management Finalization (AFTER USERS FIX)
+
+### Variables Tab Implementation
+- [ ] Extract Variables components from v47 zip (if provided)
+- [ ] OR Create VariablesTab.tsx from scratch
+- [ ] Create PositionManagement.tsx component
+- [ ] Create DepartmentManagement.tsx component
+- [ ] Add Variables tab to Settings.tsx
+- [ ] Import Database icon from lucide-react
+- [ ] Test Position/Department CRUD operations
+- [ ] Test usage counts and delete protection
+- [ ] Deploy Variables to production
+
+---
+
+## ✅ COMPLETED
+
+### Dark Mode Implementation - DONE ✅
+- [x] CSS variables updated with ERP-style dark mode colors
+- [x] All pages have dark mode support
+- [x] Deployed to production
+
+### Environment Variables - DONE ✅
+- [x] Fixed environment variable loading in Vercel
+- [x] Created diagnostic page at /env-check
+- [x] Verified Supabase credentials are loading correctly
+
+### Login Bug Fixes - DONE ✅
+- [x] Added missing supabase import to Login.tsx
+- [x] Fixed initial login authentication
+
+---
+
+## 📝 Notes
+
+**Project:** DNA Ops Manual App
+**Current Version:** 4.2.0
+**Deployment:** Vercel (https://dna-ops-manual.vercel.app)
+**Repository:** https://github.com/Akhader63/dna-ops-manual
+
+**User Instructions:**
+1. Start with 2FA modal (highest priority) ← IN PROGRESS
+2. Then fix Users tab error
+3. Finally complete Variables tab
+
+**Testing Account:**
+- Email: a.khader@dna.systems
+- Password: Ak892763507
+- 2FA: Enabled (requires authenticator app)

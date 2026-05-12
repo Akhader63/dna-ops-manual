@@ -1,0 +1,78 @@
+// ============================================
+// DNA Client Operations Manual App
+// Supabase Database TypeScript Types
+// Generated from schema: database/001_initial_schema.sql
+// ============================================
+
+// ─── ENUM Types ───
+
+export type UserRole = 'super_admin' | 'admin' | 'consultant' | 'viewer';
+export type ClientStatus = 'active' | 'inactive' | 'on_hold';
+export type ManualStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'archived';
+export type ManualType = 'full' | 'module_specific' | 'role_specific' | 'process_specific';
+export type SelectionLevel = 'module' | 'transaction' | 'use_case';
+export type ApprovalType = 'sequential' | 'parallel' | 'hierarchical' | 'conditional';
+export type RoleType = 'system' | 'custom';
+export type ResponsibilityType = 'R' | 'A' | 'C' | 'I';
+export type RoadmapType = 'flowchart' | 'swimlane' | 'mindmap' | 'timeline';
+export type RoadmapStatus = 'draft' | 'published' | 'archived';
+export type NodeType = 'start' | 'end' | 'module' | 'transaction' | 'use_case' | 'approval' | 'document' | 'decision' | 'process';
+export type EdgeType = 'standard' | 'conditional' | 'reversible';
+export type AccessLevel = 'admin' | 'manager' | 'user' | 'viewer';
+export type TransactionFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually' | 'as_needed' | 'event_driven';
+export type Complexity = 'simple' | 'medium' | 'complex';
+export type IssueType = 'bug' | 'feature' | 'change_request' | 'task';
+export type IssuePriority = 'critical' | 'high' | 'medium' | 'low';
+export type IssueStatus = 'open' | 'in_progress' | 'in_review' | 'resolved' | 'closed';
+
+// ─── JSONB Subtypes ───
+
+export interface UseCaseStep {
+  step: number;
+  action: string;
+  details?: string;
+}
+
+export interface ApprovalLevel {
+  level: number;
+  name: string;
+  min_approvers: number;
+  role_ids: string[];
+  can_delegate: boolean;
+  auto_approve_below_amount?: number;
+}
+
+export interface NodeStyle {
+  background?: string;
+  color?: string;
+  border?: string;
+  borderRadius?: string;
+}
+
+export interface NodeData {
+  moduleId?: string;
+  transactionId?: string;
+  useCaseId?: string;
+  description?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface EdgeStyle {
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+}
+
+export interface RoadmapLayout {
+  orientation: 'horizontal' | 'vertical';
+  spacing: number;
+  autoLayout: boolean;
+}
+
+// ─── Recovery Code Type ───
+
+export interface RecoveryCode {
+  code: string; // Hashed recovery code
+  used: boolean;
+  used_at?: string;
+}

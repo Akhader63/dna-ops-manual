@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug</title>
+</head>
+<body>
+    <h1>Check Browser Console for Errors</h1>
+    <script>
+        console.log("Loading app...");
+        window.addEventListener('error', (e) => {
+            console.error('Error caught:', e.error);
+        });
+    </script>
+</body>
+</html>

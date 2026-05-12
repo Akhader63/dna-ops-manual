@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* DNA Brand Colors */
+    --dna-black: #000000;
+    --dna-pampas: #F8F7F3;
+    --dna-cream: #F0EFEA;
+    --dna-pomegranate: #F3350C;
+    --dna-tundora: #434343;
+    --dna-silver: #C7C7C7;
+    --dna-alto: #DDDDDD;
+    --dna-mercury: #E3E3E3;
+    --dna-surface-dark: #0A0A0A;
+    --dna-surface-darker: #1A1A1A;
+
+    /* Status Colors */
+    --status-green: #10B981;
+    --status-amber: #F59E0B;
+    --status-blue: #3B82F6;
+    --status-red: #EF4444;
+  }
+
+  .dark {
+    /* PITCH BLACK THEME - Matching ERP Design */
+    /* Main backgrounds - Pure black */
+    --background: 0 0% 0%; /* #000000 - pitch black */
+    --foreground: 0 0% 100%; /* Pure white text */
+
+    /* Cards & Surfaces - Dark Grey (#171717) for clear separation */
+    --card: 0 0% 9%; /* #171717 - dark grey cards/panels */
+    --card-foreground: 0 0% 100%;
+
+    /* Popovers, Modals, Dropdowns - Elevated (#1F1F1F) */
+    --popover: 0 0% 12%; /* #1F1F1F - slightly elevated surfaces */
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary colors */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+
+    /* Secondary surfaces */
+    --secondary: 0 0% 12%; /* #1F1F1F */
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted elements */
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 56%; /* #8F8F8F - muted grey text */
+
+    /* Accent colors */
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive/Error */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders (#2A2A2A) - Clear separation */
+    --border: 0 0% 16%; /* #2A2A2A - visible borders */
+    --input: 0 0% 8%; /* #151515 - input field backgrounds */
+    --ring: 0 0% 83.9%;
+
+    /* Sidebar - pitch black in dark mode */
+    --sidebar-background: 0 0% 0%; /* #000000 */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 6%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 0 0% 83.9%;
+
+    /* DNA Brand Colors - Dark Mode Override */
+    --dna-black: #000000; /* Pitch black */
+    --dna-pampas: #171717; /* Dark grey surface for cards */
+    --dna-cream: #000000; /* Pitch black main background */
+    --dna-tundora: #B8B8B8; /* Light grey for secondary text */
+    --dna-silver: #8F8F8F; /* Muted grey for tertiary text */
+    --dna-alto: #2A2A2A; /* Border color for separation */
+    --dna-mercury: #1F1F1F; /* Elevated surface color */
+    --dna-surface-dark: #151515; /* Input field backgrounds */
+    --dna-surface-darker: #171717; /* Card backgrounds */
+
+    /* Additional Professional Dark Mode Tokens */
+    --dna-surface-elevated: #1F1F1F; /* Modals, popovers */
+    --dna-border-soft: #333333; /* Softer borders */
+    --dna-text-primary: #FFFFFF; /* Pure white headings/titles */
+    --dna-text-secondary: #B8B8B8; /* Light grey body text */
+    --dna-text-muted: #8F8F8F; /* Muted grey help text */
+  }
+}
+
+/* Dark mode scrollbar */
+.dark::-webkit-scrollbar-thumb {
+  background: #666666;
+}
+
+.dark::-webkit-scrollbar-thumb:hover {
+  background: #888888;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C7C7C7;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #434343;
+}
+
+/* Shimmer animation for skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #F0EFEA 25%, #F8F7F3 50%, #F0EFEA 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Toast notifications - ensure they appear above everything */
+[data-sonner-toaster] {
+  z-index: 9999 !important;
+}
+
+[data-sonner-toast] {
+  z-index: 9999 !important;
+}
+
+/* Ensure toast close button is visible */
+[data-sonner-toast] [data-close-button] {
+  opacity: 1 !important;
+}

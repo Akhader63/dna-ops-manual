@@ -1,0 +1,5 @@
+  invitation_expires_at: string | null;
+  email_verified: boolean;
+  email_verification_token: string | null;
+  email_verification_expires_at: string | null;
+  password_reset_token: string | null;

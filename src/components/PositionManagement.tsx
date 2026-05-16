@@ -288,17 +288,11 @@ export default function PositionManagement() {
             <p className="text-lg font-medium text-dna-black mb-1">
               {searchQuery ? 'No positions found' : 'No positions yet'}
             </p>
-            <p className="text-sm text-dna-tundora mb-4">
+            <p className="text-sm text-dna-tundora">
               {searchQuery
                 ? 'Try adjusting your search query'
                 : 'Get started by creating your first position'}
             </p>
-            {!searchQuery && (
-              <Button onClick={handleAdd} className="bg-dna-pomegranate hover:bg-dna-pomegranate/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Position
-              </Button>
-            )}
           </div>
         ) : (
           <Table>

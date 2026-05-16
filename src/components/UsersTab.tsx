@@ -658,9 +658,11 @@ export default function UsersTab({}: UsersTabProps) {
           onSuccess={() => {
             setShowAddUserDialog(false);
             fetchUsers();
-    fetchPositions();
-    fetchDepartments();
+            fetchPositions();
+            fetchDepartments();
           }}
+          departments={departments}
+          positions={positions}
         />
 
         {/* Delete User Confirmation Dialog */}
@@ -735,7 +737,19 @@ export default function UsersTab({}: UsersTabProps) {
 }
 
 // Add User Dialog Component
-function AddUserDialog({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: () => void }) {
+function AddUserDialog({
+  open,
+  onClose,
+  onSuccess,
+  departments,
+  positions
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  departments: Array<{id: string; name: string; is_active: boolean}>;
+  positions: Array<{id: string; name: string; is_active: boolean}>;
+}) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

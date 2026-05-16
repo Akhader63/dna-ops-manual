@@ -13,6 +13,7 @@ import {
   Check,
   Shield,
   Mail,
+  Settings2,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -27,6 +28,7 @@ import type { Module, UserAccount, ChangeLog } from '@/types/database';
 
 import UsersTab from '@/components/UsersTab';
 import SMTPTab from '@/components/SMTPTab';
+import VariablesTab from '@/components/VariablesTab';
 const ease = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
 /* ──────────── Loading Skeleton ──────────── */
@@ -453,6 +455,7 @@ export default function Settings() {
   const tabItems = [
     { value: 'general', label: 'General', icon: Sliders },
     { value: 'users', label: 'Users', icon: Users },
+    { value: 'variables', label: 'Variables', icon: Settings2 },
     { value: 'modules', label: 'Modules', icon: Layers },
     { value: 'notifications', label: 'Notifications', icon: Bell },
     { value: 'audit', label: 'Audit Log', icon: ClipboardList },
@@ -506,6 +509,10 @@ export default function Settings() {
 
           <TabsContent value="users" className="mt-0">
             <UsersTab />
+          </TabsContent>
+
+          <TabsContent value="variables" className="mt-0">
+            <VariablesTab />
           </TabsContent>
 
           <TabsContent value="modules" className="mt-0">

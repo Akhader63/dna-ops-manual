@@ -3,9 +3,9 @@
 > **Document Type:** Living Project Plan
 > **Project:** DNA Client Operations Manual App
 > **Product:** DNA ERP by Solution ERP
-> **Version:** 4.2.0
-> **Last Updated:** 2026-05-12
-> **Status:** Stage 7 — Variables Management System Implemented, Position/Department Predefined Variables Active
+> **Version:** 4.3.0
+> **Last Updated:** 2026-05-16
+> **Status:** Stage 8 — 2FA Modal Complete, UsersTab Fixed, Variables Management Pending Implementation
 > **Owner:** Solution ERP Development Team (Abdullah Khadim / Abdallah Khader)
 
 ---
@@ -538,6 +538,7 @@ This stage encompasses all production deployment activities: GitHub repository c
 
 | Date | Version | Author | Description |
 |------|---------|--------|-------------|
+| 2026-05-16 | 4.3.0 | System | **2FA Modal Implementation Complete & UsersTab Fixed** — Completed comprehensive 2FA modal dialog system (Version 48). Removed redirect to /2fa-verify page, implemented inline 2FA modal on Login page with OTP input (6 digits), auto-verification when complete, Cancel and Verify buttons. Fixed critical onAuthStateChange bypass issue using localStorage flag system ('2fa_verified') to prevent race condition between session creation and 2FA check. Fixed database queries to use auth_user_id column instead of id column in twoFactorService.ts (verifyTwoFactorLogin, verifyRecoveryCode, regenerateRecoveryCodes, disableTwoFactor). Fixed RLS infinite recursion with SECURITY DEFINER function for admin check policies. Fixed PrivateRoute redirect logic to send pending 2FA users to /login instead of /2fa-verify. Cleaned up all debugging code (red debug box, verbose console.logs). Tested successfully - modal appears, 2FA verification works, dashboard access granted, users stay logged in. Fixed UsersTab "departments is not defined" error by passing departments and positions state as props to nested AddUserDialog component. Updated AddUserDialog function signature to accept departments and positions arrays. All code deployed to production. 2FA modal is production-ready. UsersTab fix deployed and ready for testing. Variables Management implementation pending (awaiting v47 code extraction). |
 | 2026-05-10 | 4.1.0 | System | **Email Sending Implemented via Netlify Functions** — Implemented actual email sending functionality using Netlify serverless functions with nodemailer. Created netlify/functions/send-email.ts (Netlify Function with SMTP integration, 107 lines) that accepts email payload, validates SMTP config, creates nodemailer transporter, verifies SMTP connection, sends email, returns success/error response. Installed dependencies: nodemailer@8.0.7, @netlify/functions@5.2.0, @types/nodemailer@8.0.0. Updated emailService.ts to call /.netlify/functions/send-email instead of just logging: sendVerificationEmail() now actually sends emails with verification links, sendWelcomeEmail() sends welcome emails after password creation, testSMTPSettings() sends test emails to verify SMTP configuration. Updated netlify.toml with functions configuration: added functions = "netlify/functions", added node_bundler = "esbuild". All email templates (HTML + Text) now delivered via real SMTP providers (Gmail, Outlook, custom SMTP). Complete flow: Admin creates user → Netlify Function sends verification email → User receives email → Clicks link → Verifies email → Sets password → 2FA (if Consultant) → Dashboard. Deployed to Netlify (Version 39). Email sending now fully operational in production. |
 | 2026-05-10 | 4.0.0 | System | **Email Verification & SMTP Configuration Complete** — Implemented complete email verification system with 24-hour token expiry. Added email_verified, email_verification_token, email_verification_expires_at columns to user_accounts. Created smtp_settings table with RLS policies (Super Admin only). Built SMTP Configuration UI (Settings > SMTP tab) with Host, Port, Username, Password, From Email, From Name, TLS toggle. Created emailService.ts with sendVerificationEmail(), sendWelcomeEmail(), testSMTPSettings(). Built VerifyEmail.tsx page with token validation, success message, 5-second auto-redirect, manual "Set up Password Now" button. Updated Add User to generate verification token and send email. Added email verification check to Login and Set Password pages. Complete user flow: Admin creates user → Email sent → User verifies email → Sets password → 2FA (if Consultant) → Dashboard. Deployed to Netlify (Version 37). Documentation: EMAIL_VERIFICATION_SMTP_SUMMARY.md (comprehensive guide). |
 | 2026-05-10 | 4.0.0 | System | **User Onboarding & Password Creation Flow** — Fully implemented Add User functionality without pre-setting passwords. Created comprehensive Add User Dialog with all fields (Name, Email, User Type, Role, Department, Position, Phone). Built Set Password page with password strength validation (8 chars, upper, lower, number, special), real-time strength indicators, Supabase auth user creation, auth_user_id linking. Implemented first-time user detection in Login page. Created Profile page with personal info display, 2FA management section, toggle for Client users to enable/disable 2FA, mandatory 2FA display for Consultant users, reconfigure 2FA option, account status. Updated navigation with /profile route, TopHeader dropdown link. User type-specific routing: Consultants forced to 2FA setup, Clients go to Dashboard. Deployed to Netlify (Version 35). Documentation: ADD_USER_FEATURE_SUMMARY.md (complete implementation details). |
@@ -579,6 +580,8 @@ This stage encompasses all production deployment activities: GitHub repository c
 
 | Date | Version | Change Type | Description | Rationale | Impact |
 |------|---------|-------------|-------------|-----------|--------|
+| 2026-05-16 | 4.3.0 | Enhancement | 2FA Modal Implementation | Replaced /2fa-verify page redirect with inline modal dialog on Login page. Fixed onAuthStateChange race condition using localStorage flag system. 2FA now appears as modal after password verification, improving UX and resolving logout loop issues. | Previous redirect-based 2FA flow caused session conflicts and logout loops. Modal-based approach provides seamless authentication flow without page transitions, better UX, and prevents session loss. | High |
+| 2026-05-16 | 4.3.0 | Bug Fix | UsersTab departments/positions scope error | Fixed "departments is not defined" error by passing departments and positions state as props to nested AddUserDialog component. | AddUserDialog was a separate function component without access to parent component state. Passing as props ensures proper scope access. | Medium |
 | 2026-05-10 | 4.1.0 | Feature | Email sending via Netlify Functions | Implemented actual email delivery using Netlify serverless functions with nodemailer. Frontend calls /.netlify/functions/send-email which handles SMTP connection, verification, and email sending. Supports any SMTP provider (Gmail, Outlook, custom). | Email verification and notifications were previously only logged to console. Production apps require actual email delivery for user onboarding, password resets, and notifications. Netlify Functions provide serverless backend without dedicated infrastructure. | High |
 | 2026-05-10 | 4.0.0 | Enhancement | Email verification requirement for new users | All new users must verify their email address before setting password. 24-hour token expiry for security. | Enhanced security, prevents fake accounts, professional onboarding experience | High |
 | 2026-05-10 | 4.0.0 | Feature | SMTP configuration for Super Admin | Super Admin can configure SMTP settings to enable email notifications system-wide. RLS policies ensure only Super Admin access. | Flexibility for different deployment environments, no hard-coded email credentials | Medium |
@@ -597,13 +600,63 @@ This stage encompasses all production deployment activities: GitHub repository c
 
 ---
 
-## 📊 Latest Implementation: Variables Management System (Version 4.2.0)
+## 📊 Latest Implementation: 2FA Modal System (Version 4.3.0)
 
-### **Phase 10: Variables Management System** (May 12, 2026)
+### **Phase 11: 2FA Modal Implementation** (May 16, 2026)
 
-**Status:** ✅ COMPLETE - Ready for Deployment
+**Status:** ✅ COMPLETE - Production Ready
 
 **Implemented Features:**
+
+1. **Modal-Based 2FA Flow**
+   - Removed redirect to `/2fa-verify` page
+   - Implemented inline modal dialog on Login page
+   - OTP input with 6 individual digit boxes
+   - Auto-verification when 6th digit entered
+   - Manual "Verify" button option
+   - "Cancel" button to abort verification
+
+2. **Critical Fixes**
+   - Fixed `onAuthStateChange` race condition using localStorage flag system
+   - Flag: `2fa_verified` set after successful verification, cleared on logout
+   - Prevents auto-authentication when 2FA not yet verified
+   - Fixed database queries: changed from `id` to `auth_user_id` column
+   - Fixed RLS infinite recursion with SECURITY DEFINER function
+   - Fixed PrivateRoute redirect logic
+
+3. **User Experience**
+   - Session stays alive during 2FA verification
+   - No logout loop issues
+   - Clean, production-ready code (debugging removed)
+   - Consistent error handling and user feedback
+
+4. **UsersTab Fix**
+   - Fixed "departments is not defined" error
+   - Passed `departments` and `positions` as props to AddUserDialog
+   - Proper scope access for nested components
+
+**Technical Details:**
+- Version: 48 (checkpoint created)
+- Files Modified: `src/pages/Login.tsx`, `src/hooks/useAuth.ts`, `src/services/twoFactorService.ts`, `src/components/PrivateRoute.tsx`, `src/components/UsersTab.tsx`
+- Database: Updated RLS policies with SECURITY DEFINER functions
+- Testing: Successfully tested by user - modal appears, verifies, dashboard access works
+
+**Files Modified:**
+- `src/pages/Login.tsx` - Modal implementation
+- `src/hooks/useAuth.ts` - onAuthStateChange fix
+- `src/services/twoFactorService.ts` - Database column fix
+- `src/components/PrivateRoute.tsx` - Redirect logic
+- `src/components/UsersTab.tsx` - Props fix for nested component
+
+---
+
+### **Phase 10: Variables Management System** (Pending Implementation)
+
+**Status:** ⏳ PENDING - Awaiting v47 Code Extraction
+
+**Note:** The Variables Management System was previously documented as complete (v4.2.0), but the implementation files do not exist in the current codebase. The code will be extracted from Version 47 archive and integrated into the current version.
+
+**Planned Features (from v4.2.0 documentation):**
 
 1. **Database Schema**
    - Created `positions` table with full CRUD support
@@ -659,8 +712,8 @@ This stage encompasses all production deployment activities: GitHub repository c
 
 ### **GitHub Repository**
 
-**Repository:** https://github.com/Akhader63/dna-ops-manual  
-**Branch:** main  
+**Repository:** https://github.com/Akhader63/dna-ops-manual
+**Branch:** main
 **Owner:** Akhader63
 
 ### **Deployment Flow**
@@ -709,7 +762,6 @@ git push -u origin main
 
 ---
 
-**Last Deployment:** May 12, 2026  
-**Version:** 4.2.0 - Variables Management System  
+**Last Deployment:** May 12, 2026
+**Version:** 4.2.0 - Variables Management System
 **Commit:** 52b3130
-

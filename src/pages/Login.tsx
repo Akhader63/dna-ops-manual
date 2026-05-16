@@ -34,9 +34,16 @@ export default function Login() {
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
 
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('🚨 Modal state changed:', show2FAModal);
+  }, [show2FAModal]);
+
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('🔍 Auth check:', { authLoading, isAuthenticated, authState });
     if (!authLoading && isAuthenticated && authState === 'fully_authenticated') {
+      console.log('➡️ Navigating to dashboard');
       navigate('/');
     }
   }, [isAuthenticated, authLoading, authState, navigate]);
@@ -305,8 +312,18 @@ export default function Login() {
         </div>
       </motion.div>
 
+      {/* Debug indicator */}
+      {show2FAModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, background: 'red', color: 'white', padding: '10px', zIndex: 99999 }}>
+          MODAL STATE IS TRUE
+        </div>
+      )}
+
       {/* 2FA Verification Modal */}
-      <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
+      <Dialog open={show2FAModal} onOpenChange={(open) => {
+        console.log('🚪 Dialog onOpenChange called with:', open);
+        setShow2FAModal(open);
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">

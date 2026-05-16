@@ -230,10 +230,25 @@ export function useAuth() {
         return { success: false, error: { message: 'User account not found' } as AuthError };
       }
 
+      console.log('👤 User Account:', {
+        email: userAccount.email,
+        user_type: userAccount.user_type,
+        two_factor_enabled: userAccount.two_factor_enabled,
+        two_factor_required: userAccount.two_factor_required,
+      });
+
       const requiresTwoFactor = userAccount.two_factor_required || userAccount.user_type === 'consultant_user';
       const hasTwoFactorEnabled = userAccount.two_factor_enabled;
 
+      console.log('🔒 2FA Check:', {
+        requiresTwoFactor,
+        hasTwoFactorEnabled,
+        willRequireSetup: requiresTwoFactor && !hasTwoFactorEnabled,
+        willRequireVerification: hasTwoFactorEnabled,
+      });
+
       if (requiresTwoFactor && !hasTwoFactorEnabled) {
+        console.log('⚙️ 2FA Setup Required');
         setState({
           user: data.user,
           userAccount,
@@ -248,6 +263,7 @@ export function useAuth() {
       }
 
       if (hasTwoFactorEnabled) {
+        console.log('🔐 2FA Verification Required');
         // DON'T sign out - keep the session alive but mark as pending 2FA
         setState({
           user: data.user,
@@ -261,6 +277,8 @@ export function useAuth() {
         });
         return { success: false, requiresVerification: true, userId: data.user.id };
       }
+
+      console.log('✅ Login Complete - No 2FA Required');
 
       setState({
         user: data.user,

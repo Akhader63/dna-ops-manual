@@ -86,22 +86,31 @@ export default function Login() {
       // Proceed with normal login
       const result = await signIn(email, password);
 
+      console.log('🔐 Login result:', result);
+      console.log('🔐 requiresVerification:', result.requiresVerification);
+      console.log('🔐 requiresSetup:', result.requiresSetup);
+      console.log('🔐 success:', result.success);
+
       setIsLoading(false);
 
       if (result.success) {
         // Successfully logged in (no 2FA required)
+        console.log('✅ Login successful - no 2FA required');
         // The useEffect will handle navigation
       } else if (result.requiresSetup) {
         // Consultant user needs to set up 2FA
+        console.log('⚙️ Redirecting to 2FA setup');
         // The useEffect will handle navigation to /2fa-setup
       } else if (result.requiresVerification) {
         // Show 2FA modal instead of redirecting
+        console.log('🔒 Showing 2FA modal');
         setPending2FAUserId(result.userId!);
         setShow2FAModal(true);
         setTwoFactorCode('');
         setTwoFactorError(null);
       } else {
         // Login failed
+        console.log('❌ Login failed:', result.error?.message);
         setError(result.error?.message || 'Login failed. Please check your credentials.');
       }
     } catch (err) {

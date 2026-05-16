@@ -183,6 +183,18 @@ export function useAuth() {
             return;
           }
 
+          // Check if 2FA is enabled - DON'T auto-authenticate without verification
+          if (hasTwoFactorEnabled) {
+            // Only mark as fully authenticated if localStorage has 2fa_verified flag
+            const verified2FA = localStorage.getItem('2fa_verified') === 'true';
+
+            if (!verified2FA) {
+              console.log('⚠️ onAuthStateChange: 2FA enabled but not verified yet, skipping auto-auth');
+              // Don't set auth state here - let signIn() handle it
+              return;
+            }
+          }
+
           setState({
             user: session.user,
             userAccount,
@@ -309,6 +321,9 @@ export function useAuth() {
 
       const userAccount = await fetchUserAccount(state.pendingUserId);
 
+      // Set 2FA verified flag so onAuthStateChange allows fully_authenticated
+      localStorage.setItem('2fa_verified', 'true');
+
       setState({
         user: data.session.user,
         userAccount,
@@ -336,6 +351,9 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
+
+      // Clear 2FA verified flag
+      localStorage.removeItem('2fa_verified');
 
       setState({
         user: null,

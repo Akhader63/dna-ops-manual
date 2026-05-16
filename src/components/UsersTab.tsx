@@ -22,6 +22,7 @@ import {
   Trash2,
   UserX,
   RefreshCw,
+  Edit2,
 } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';

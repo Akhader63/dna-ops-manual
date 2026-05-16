@@ -1,8 +1,8 @@
 # DNA Ops Manual - Development Todos
 
-## ✅ PHASE 1 & 2 COMPLETE - AWAITING TESTING
+## 🎉 PHASE 1 COMPLETE - 2FA MODAL WORKING!
 
-### Phase 1: 2FA Modal Dialog - COMPLETE ✅
+### Phase 1: 2FA Modal Dialog - ✅ COMPLETE
 - [x] Create 2FA modal component in Login page
 - [x] Update signIn flow to show modal instead of redirect
 - [x] Add 2FA code input with OTP component
@@ -10,13 +10,19 @@
 - [x] Remove redirect to /2fa-verify page
 - [x] Keep session alive during 2FA verification
 - [x] Push to GitHub and deploy to Vercel
-- [ ] ⏳ **User Testing Required** - Test login → modal → dashboard flow
+- [x] Fix onAuthStateChange bypass issue
+- [x] Fix database query column (auth_user_id)
+- [x] Fix RLS infinite recursion
+- [x] Remove debug elements
+- [x] ✅ **User Testing Passed** - Modal appears and works perfectly!
 
-**Status:** Code deployed, awaiting user testing
+**Status:** ✅ **PRODUCTION READY**
 
 ---
 
-### Phase 2: UsersTab Fix - COMPLETE ✅
+## 🔧 Phase 2: UsersTab Fix (CURRENT)
+
+### Critical Bug Fix
 - [x] Fix "SelectTrigger is not defined" error in UsersTab
 - [x] Import SelectContent, SelectItem, SelectTrigger, SelectValue
 - [x] Push to GitHub and deploy to Vercel
@@ -28,7 +34,7 @@
 
 ## 📊 Phase 3: Variables Management Implementation (NEXT)
 
-**Status:** Ready to start after Phases 1 & 2 are tested
+**Status:** Ready to start after Phase 2 is tested
 
 ### Variables Tab Implementation
 - [ ] Extract Variables components from v47 zip (if provided)
@@ -50,6 +56,10 @@
 - [x] OTP input with auto-verification
 - [x] Session persistence during 2FA
 - [x] Error handling and UX improvements
+- [x] Fixed onAuthStateChange bypass
+- [x] Fixed database column queries
+- [x] Fixed RLS policies
+- [x] Cleaned up debug code
 
 ### UsersTab Bug Fix - DONE ✅
 - [x] Fixed missing Select component imports
@@ -70,12 +80,13 @@
 **Repository:** https://github.com/Akhader63/dna-ops-manual
 
 **Latest Commits:**
-- `3d3ce55` - feat: Implement 2FA modal dialog on login page
-- `e11edfb` - fix: Add missing Select component imports in UsersTab
+- `b3aae26` - chore: Remove debugging elements from 2FA modal
+- `6f4aff4` - fix: Query user_accounts by auth_user_id instead of id
+- `cc55230` - fix: Prevent onAuthStateChange from bypassing 2FA verification
 
 **Testing Priority:**
-1. ✅ 2FA login flow (modal appears, code verifies, dashboard access)
-2. ✅ Users tab loads without errors
+1. ✅ 2FA login flow - **WORKING PERFECTLY!**
+2. 🔄 Users tab loads without errors (needs testing)
 3. 🔄 Variables Management (after above tested)
 
 **Testing Account:**

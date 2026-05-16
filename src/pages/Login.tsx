@@ -34,16 +34,9 @@ export default function Login() {
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
 
-  // Debug modal state changes
-  useEffect(() => {
-    console.log('🚨 Modal state changed:', show2FAModal);
-  }, [show2FAModal]);
-
   // Redirect if already authenticated
   useEffect(() => {
-    console.log('🔍 Auth check:', { authLoading, isAuthenticated, authState });
     if (!authLoading && isAuthenticated && authState === 'fully_authenticated') {
-      console.log('➡️ Navigating to dashboard');
       navigate('/');
     }
   }, [isAuthenticated, authLoading, authState, navigate]);
@@ -102,31 +95,22 @@ export default function Login() {
       // Proceed with normal login
       const result = await signIn(email, password);
 
-      console.log('🔐 Login result:', result);
-      console.log('🔐 requiresVerification:', result.requiresVerification);
-      console.log('🔐 requiresSetup:', result.requiresSetup);
-      console.log('🔐 success:', result.success);
-
       setIsLoading(false);
 
       if (result.success) {
         // Successfully logged in (no 2FA required)
-        console.log('✅ Login successful - no 2FA required');
         // The useEffect will handle navigation
       } else if (result.requiresSetup) {
         // Consultant user needs to set up 2FA
-        console.log('⚙️ Redirecting to 2FA setup');
         // The useEffect will handle navigation to /2fa-setup
       } else if (result.requiresVerification) {
         // Show 2FA modal instead of redirecting
-        console.log('🔒 Showing 2FA modal');
         // pendingUserId is already set by useAuth, just show the modal
         setShow2FAModal(true);
         setTwoFactorCode('');
         setTwoFactorError(null);
       } else {
         // Login failed
-        console.log('❌ Login failed:', result.error?.message);
         setError(result.error?.message || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
@@ -312,18 +296,8 @@ export default function Login() {
         </div>
       </motion.div>
 
-      {/* Debug indicator */}
-      {show2FAModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, background: 'red', color: 'white', padding: '10px', zIndex: 99999 }}>
-          MODAL STATE IS TRUE
-        </div>
-      )}
-
       {/* 2FA Verification Modal */}
-      <Dialog open={show2FAModal} onOpenChange={(open) => {
-        console.log('🚪 Dialog onOpenChange called with:', open);
-        setShow2FAModal(open);
-      }}>
+      <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">

@@ -23,9 +23,9 @@ export default function PrivateRoute() {
     return <Navigate to="/2fa-setup" replace />;
   }
 
-  // Check if pending 2FA verification
+  // Check if pending 2FA verification - redirect to login to show modal
   if (authState === 'password_verified_pending_2fa_verification') {
-    return <Navigate to="/2fa-verify" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Check if user is fully authenticated

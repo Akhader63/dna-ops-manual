@@ -129,7 +129,7 @@ export class TwoFactorService {
       const { data: user, error: fetchError } = await supabase
         .from('user_accounts')
         .select('recovery_codes')
-        .eq('id', userId)
+        .eq('auth_user_id', userId)
         .single();
 
       if (fetchError || !user) return false;
@@ -154,7 +154,7 @@ export class TwoFactorService {
       const { error: updateError } = await supabase
         .from('user_accounts')
         .update({ recovery_codes: updatedCodes })
-        .eq('id', userId);
+        .eq('auth_user_id', userId);
 
       return !updateError;
     } catch (error) {
@@ -193,7 +193,7 @@ export class TwoFactorService {
           recovery_codes: hashed,
           recovery_codes_generated_at: new Date().toISOString(),
         })
-        .eq('id', userId);
+        .eq('auth_user_id', userId);
 
       if (error) {
         return { success: false, error: error.message };
@@ -219,7 +219,7 @@ export class TwoFactorService {
       const { data: user, error: fetchError } = await supabase
         .from('user_accounts')
         .select('two_factor_secret, recovery_codes')
-        .eq('id', userId)
+        .eq('auth_user_id', userId)
         .single();
 
       if (fetchError || !user) {
@@ -251,7 +251,7 @@ export class TwoFactorService {
       await supabase
         .from('user_accounts')
         .update({ last_two_factor_verification: new Date().toISOString() })
-        .eq('id', userId);
+        .eq('auth_user_id', userId);
 
       return { success: true };
     } catch (error) {
@@ -272,7 +272,7 @@ export class TwoFactorService {
           two_factor_secret: null,
           recovery_codes: null,
         })
-        .eq('id', userId);
+        .eq('auth_user_id', userId);
 
       if (error) {
         return { success: false, error: error.message };
@@ -297,7 +297,7 @@ export class TwoFactorService {
       const { data: user, error: fetchError } = await supabase
         .from('user_accounts')
         .select('two_factor_secret')
-        .eq('id', userId)
+        .eq('auth_user_id', userId)
         .single();
 
       if (fetchError || !user) {
@@ -320,7 +320,7 @@ export class TwoFactorService {
           recovery_codes: hashed,
           recovery_codes_generated_at: new Date().toISOString(),
         })
-        .eq('id', userId);
+        .eq('auth_user_id', userId);
 
       if (error) {
         return { success: false, error: error.message };

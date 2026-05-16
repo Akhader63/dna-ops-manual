@@ -50,6 +50,8 @@ export default function UsersTab({}: UsersTabProps) {
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [showEditUserDialog, setShowEditUserDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserAccount | null>(null);
@@ -618,9 +620,14 @@ export default function UsersTab({}: UsersTabProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowEditUserDialog(true);
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit User
                           </DropdownMenuItem>
                           {!user.email_verified && (
                             <DropdownMenuItem onClick={() => handleResendInvitation(user)}>
@@ -661,6 +668,24 @@ export default function UsersTab({}: UsersTabProps) {
             fetchPositions();
             fetchDepartments();
           }}
+          departments={departments}
+          positions={positions}
+        />
+
+        <EditUserDialog
+          open={showEditUserDialog}
+          onClose={() => {
+            setShowEditUserDialog(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setShowEditUserDialog(false);
+            setSelectedUser(null);
+            fetchUsers();
+            fetchPositions();
+            fetchDepartments();
+          }}
+          user={selectedUser}
           departments={departments}
           positions={positions}
         />
@@ -1057,6 +1082,311 @@ function AddUserDialog({
                 <>
                   <Plus className="w-4 h-4" />
                   Create User
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Edit User Dialog Component
+function EditUserDialog({
+  open,
+  onClose,
+  onSuccess,
+  user,
+  departments,
+  positions
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  user: UserAccount | null;
+  departments: Array<{id: string; name: string; is_active: boolean}>;
+  positions: Array<{id: string; name: string; is_active: boolean}>;
+}) {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    userType: 'client_user' as 'client_user' | 'consultant_user',
+    role: 'viewer' as 'super_admin' | 'admin' | 'consultant' | 'viewer',
+    department_id: '',
+    position_id: '',
+    phone: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize form data when user prop changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        userType: user.user_type || 'client_user',
+        role: user.role || 'viewer',
+        department_id: user.department_id || '',
+        position_id: user.position_id || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Validation
+      if (!formData.fullName || !formData.email) {
+        setError('Full Name and Email are required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check if email changed and if new email already exists
+      if (formData.email.toLowerCase() !== user.email.toLowerCase()) {
+        const { data: existingUsers } = await supabase
+          .from('user_accounts')
+          .select('id')
+          .eq('email', formData.email.toLowerCase())
+          .neq('id', user.id);
+
+        if (existingUsers && existingUsers.length > 0) {
+          setError('A user with this email already exists');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Update user account
+      const { error: updateError } = await supabase
+        .from('user_accounts')
+        .update({
+          email: formData.email.toLowerCase(),
+          full_name: formData.fullName,
+          user_type: formData.userType,
+          role: formData.role,
+          department_id: formData.department_id || null,
+          position_id: formData.position_id || null,
+          phone: formData.phone || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      toast.success('User updated successfully');
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      setError(error.message || 'Failed to update user');
+      toast.error('Failed to update user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      setFormData({
+        fullName: '',
+        email: '',
+        userType: 'client_user',
+        role: 'viewer',
+        department_id: '',
+        position_id: '',
+        phone: '',
+      });
+      setError(null);
+      onClose();
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+          <DialogDescription>
+            Update user account information
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              {error}
+            </div>
+          )}
+
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Full Name <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              placeholder="John Doe"
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="john.doe@example.com"
+              required
+            />
+          </div>
+
+          {/* User Type */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              User Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.userType}
+              onChange={(e) => setFormData({ ...formData, userType: e.target.value as 'client_user' | 'consultant_user' })}
+              className="w-full px-3 py-2 text-sm border border-dna-alto rounded-md bg-white"
+              required
+            >
+              <option value="client_user">Client User</option>
+              <option value="consultant_user">Consultant User</option>
+            </select>
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+              className="w-full px-3 py-2 text-sm border border-dna-alto rounded-md bg-white"
+              required
+            >
+              <option value="viewer">Viewer</option>
+              <option value="consultant">Consultant</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+
+          {/* Department */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Department
+            </label>
+            <Select
+              value={formData.department_id}
+              onValueChange={(value) => setFormData({ ...formData, department_id: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a department..." />
+              </SelectTrigger>
+              <SelectContent>
+                {departments.length === 0 ? (
+                  <SelectItem value="" disabled>No active departments available</SelectItem>
+                ) : (
+                  departments.map((department) => (
+                    <SelectItem key={department.id} value={department.id}>
+                      {department.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Position */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Position
+            </label>
+            <Select
+              value={formData.position_id}
+              onValueChange={(value) => setFormData({ ...formData, position_id: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a position..." />
+              </SelectTrigger>
+              <SelectContent>
+                {positions.length === 0 ? (
+                  <SelectItem value="" disabled>No active positions available</SelectItem>
+                ) : (
+                  positions.map((position) => (
+                    <SelectItem key={position.id} value={position.id}>
+                      {position.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-medium text-dna-black mb-1.5">
+              Phone Number
+            </label>
+            <Input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+1 (555) 123-4567"
+            />
+          </div>
+
+          {/* Footer */}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-dna-pomegranate hover:bg-dna-pomegranate/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Save Changes
                 </>
               )}
             </Button>

@@ -1175,7 +1175,9 @@ function EditUserDialog({
       }
 
       // Update user account
-      const { error: updateError } = await supabase
+      console.log('[EditUser] Updating user:', user.id, formData);
+
+      const { data: updateData, error: updateError, count } = await supabase
         .from('user_accounts')
         .update({
           email: formData.email.toLowerCase(),
@@ -1187,9 +1189,16 @@ function EditUserDialog({
           phone: formData.phone || null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
+
+      console.log('[EditUser] Update result:', { updateData, updateError, count });
 
       if (updateError) throw updateError;
+
+      if (!updateData || updateData.length === 0) {
+        throw new Error('Update failed - no rows affected. This may be a permissions issue.');
+      }
 
       toast.success('User updated successfully');
       onSuccess();

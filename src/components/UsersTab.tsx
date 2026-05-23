@@ -62,6 +62,7 @@ export default function UsersTab({}: UsersTabProps) {
 
   // Fetch users
   const fetchUsers = async () => {
+    console.log('[UsersTab] fetchUsers called - refreshing user list...');
     setLoading(true);
     setError(null);
     try {
@@ -71,9 +72,11 @@ export default function UsersTab({}: UsersTabProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('[UsersTab] Loaded users:', data?.length || 0, data);
       setUsers((data || []) as UserAccount[]);
       setFilteredUsers((data || []) as UserAccount[]);
     } catch (err) {
+      console.error('[UsersTab] Error fetching users:', err);
       setError((err as Error).message || 'Failed to load users');
       toast.error('Failed to load users');
     } finally {
@@ -680,6 +683,7 @@ export default function UsersTab({}: UsersTabProps) {
             setSelectedUser(null);
           }}
           onSuccess={() => {
+            console.log('[UsersTab] EditUser onSuccess - refreshing all data...');
             setShowEditUserDialog(false);
             setSelectedUser(null);
             fetchUsers();

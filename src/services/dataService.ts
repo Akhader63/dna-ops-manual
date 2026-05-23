@@ -114,6 +114,11 @@ export async function updateClient(id: string, updates: Partial<Client>) {
   return data as Client;
 }
 
+export async function deleteClient(id: string) {
+  const { error } = await supabase.from('clients').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // ─── Client Manuals ───
 export async function getClientManuals(clientId?: string) {
   let query = supabase.from('client_manuals').select('*').order('updated_at', { ascending: false });

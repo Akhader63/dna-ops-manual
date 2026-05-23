@@ -1,6 +1,26 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Building2, Plus, Search, MapPin, Mail, Phone, AlertCircle, RefreshCw } from 'lucide-react';
-import { getClients, createClient, generateNextClientCode } from '@/services/dataService';
+import {
+  Building2,
+  Plus,
+  Search,
+  MapPin,
+  Mail,
+  Phone,
+  AlertCircle,
+  RefreshCw,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Eye,
+  FileText,
+} from 'lucide-react';
+import {
+  getClients,
+  createClient,
+  updateClient,
+  deleteClient,
+  generateNextClientCode,
+} from '@/services/dataService';
 import type { Client } from '@/services/dataService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +43,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 // ─── Industry Color Map ───
 const industryColors: Record<string, string> = {
@@ -50,7 +95,9 @@ function getStatusClass(status: string): string {
 }
 
 function getStatusLabel(status: string): string {
-  return status === 'on_hold' ? 'On Hold' : status.charAt(0).toUpperCase() + status.slice(1);
+  return status === 'on_hold'
+    ? 'On Hold'
+    : status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 // ─── Skeleton Card ───
@@ -71,70 +118,117 @@ function ClientSkeletonCard() {
   );
 }
 
-// ─── Client Card ───
-function ClientCard({ client }: { client: Client }) {
+// ─── Client Card (Updated with Actions Menu) ───
+function ClientCard({
+  client,
+  onView,
+  onEdit,
+  onDelete,
+}: {
+  client: Client;
+  onView: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
-    <div className="bg-white rounded-lg border border-dna-silver/50 shadow-sm p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer group">
-      {/* Top: Name + Industry Badge */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-dna-pomegranate transition-colors">
-          {client.name}
-        </h3>
-        {client.industry && (
+    <div className="bg-white rounded-lg border border-dna-silver/50 shadow-sm p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-md group relative">
+      {/* Actions Menu */}
+      <div className="absolute top-3 right-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onView}>
+              <Eye className="mr-2 h-4 w-4" />
+              View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Client
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {}}>
+              <FileText className="mr-2 h-4 w-4" />
+              View Manuals
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onDelete} className="text-red-600">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Client
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Card Content */}
+      <div className="cursor-pointer" onClick={onView}>
+        {/* Top: Name + Industry Badge */}
+        <div className="flex items-start justify-between gap-3 mb-3 pr-8">
+          <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-dna-pomegranate transition-colors">
+            {client.name}
+          </h3>
+          {client.industry && (
+            <Badge
+              variant="outline"
+              className={`text-xs font-medium shrink-0 ${getIndustryClass(
+                client.industry
+              )}`}
+            >
+              {client.industry}
+            </Badge>
+          )}
+        </div>
+
+        {/* Middle: Description */}
+        <p className="text-sm text-gray-500 line-clamp-2 mb-4 min-h-[2.5rem]">
+          {client.description ?? 'No description available.'}
+        </p>
+
+        {/* Bottom: Location + Status */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-1.5 text-sm text-dna-tundora">
+            <MapPin className="size-3.5 text-dna-silver" />
+            <span className="truncate max-w-[140px]">
+              {client.city && client.country
+                ? `${client.city}, ${client.country}`
+                : client.city ?? client.country ?? '—'}
+            </span>
+          </div>
           <Badge
             variant="outline"
-            className={`text-xs font-medium shrink-0 ${getIndustryClass(client.industry)}`}
+            className={`text-xs font-medium capitalize ${getStatusClass(
+              client.status
+            )}`}
           >
-            {client.industry}
+            {getStatusLabel(client.status)}
           </Badge>
+        </div>
+
+        {/* Contact info (if available) */}
+        {(client.contact_name || client.contact_email) && (
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-50 text-xs text-gray-400">
+            {client.contact_name && (
+              <span className="flex items-center gap-1">
+                <Building2 className="size-3" />
+                {client.contact_name}
+              </span>
+            )}
+            {client.contact_email && (
+              <span className="flex items-center gap-1 truncate">
+                <Mail className="size-3" />
+                {client.contact_email}
+              </span>
+            )}
+          </div>
         )}
       </div>
-
-      {/* Middle: Description */}
-      <p className="text-sm text-gray-500 line-clamp-2 mb-4 min-h-[2.5rem]">
-        {client.description ?? 'No description available.'}
-      </p>
-
-      {/* Bottom: Location + Status */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-sm text-dna-tundora">
-          <MapPin className="size-3.5 text-dna-silver" />
-          <span className="truncate max-w-[140px]">
-            {client.city && client.country
-              ? `${client.city}, ${client.country}`
-              : client.city ?? client.country ?? '—'}
-          </span>
-        </div>
-        <Badge
-          variant="outline"
-          className={`text-xs font-medium capitalize ${getStatusClass(client.status)}`}
-        >
-          {getStatusLabel(client.status)}
-        </Badge>
-      </div>
-
-      {/* Contact info (if available) */}
-      {(client.contact_name || client.contact_email) && (
-        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-50 text-xs text-gray-400">
-          {client.contact_name && (
-            <span className="flex items-center gap-1">
-              <Building2 className="size-3" />
-              {client.contact_name}
-            </span>
-          )}
-          {client.contact_email && (
-            <span className="flex items-center gap-1 truncate">
-              <Mail className="size-3" />
-              {client.contact_email}
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }
 
-// ─── Add Client Form ───
+// ─── Add/Edit Client Form Data ───
 interface ClientFormData {
   name: string;
   code: string;
@@ -159,18 +253,42 @@ const initialFormData: ClientFormData = {
   country: '',
 };
 
-const INDUSTRY_OPTIONS = ['Construction', 'Manufacturing', 'Retail', 'Healthcare', 'Logistics'];
+const INDUSTRY_OPTIONS = [
+  'Construction',
+  'Manufacturing',
+  'Retail',
+  'Healthcare',
+  'Logistics',
+];
 
-// ─── Main Clients Page ───
+// ─── Main Clients Page (Enhanced) ───
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<ClientFormData>(initialFormData);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+
+  // Add Client Dialog
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addFormData, setAddFormData] = useState<ClientFormData>(initialFormData);
+  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({});
+  const [addSubmitting, setAddSubmitting] = useState(false);
+
+  // Edit Client Dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editFormData, setEditFormData] = useState<ClientFormData>(initialFormData);
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  // Delete Client Dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+
+  // Client Detail Sheet
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+  const [viewingClient, setViewingClient] = useState<Client | null>(null);
 
   // Fetch clients
   const loadClients = useCallback(async () => {
@@ -204,12 +322,11 @@ export default function Clients() {
     );
   }, [clients, search]);
 
-  // Form handlers
-  const handleInputChange = (field: keyof ClientFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field
-    if (formErrors[field]) {
-      setFormErrors((prev) => {
+  // Add Client Form handlers
+  const handleAddInputChange = (field: keyof ClientFormData, value: string) => {
+    setAddFormData((prev) => ({ ...prev, [field]: value }));
+    if (addFormErrors[field]) {
+      setAddFormErrors((prev) => {
         const next = { ...prev };
         delete next[field];
         return next;
@@ -217,64 +334,159 @@ export default function Clients() {
     }
   };
 
-  const validateForm = (): boolean => {
+  const validateAddForm = (): boolean => {
     const errors: Record<string, string> = {};
-    if (!formData.name.trim()) errors.name = 'Client name is required';
-    // Client code is auto-generated, so we just verify it exists
-    if (!formData.code.trim()) errors.code = 'Client code generation failed. Please close and reopen the form.';
-    setFormErrors(errors);
+    if (!addFormData.name.trim()) errors.name = 'Client name is required';
+    if (!addFormData.code.trim())
+      errors.code =
+        'Client code generation failed. Please close and reopen the form.';
+    setAddFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateAddForm()) return;
 
-    setSubmitting(true);
+    setAddSubmitting(true);
     try {
       await createClient({
-        name: formData.name.trim(),
-        code: formData.code.trim(),
-        industry: formData.industry || null,
-        description: formData.description.trim() || null,
-        contact_name: formData.contact_name.trim() || null,
-        contact_email: formData.contact_email.trim() || null,
-        contact_phone: formData.contact_phone.trim() || null,
-        city: formData.city.trim() || null,
-        country: formData.country.trim() || null,
+        name: addFormData.name.trim(),
+        code: addFormData.code.trim(),
+        industry: addFormData.industry || null,
+        description: addFormData.description.trim() || null,
+        contact_name: addFormData.contact_name.trim() || null,
+        contact_email: addFormData.contact_email.trim() || null,
+        contact_phone: addFormData.contact_phone.trim() || null,
+        city: addFormData.city.trim() || null,
+        country: addFormData.country.trim() || null,
         logo_url: null,
         website: null,
         address: null,
         status: 'active',
         metadata: null,
-      deleted_at: null,
+        deleted_at: null,
       });
-      setDialogOpen(false);
-      setFormData(initialFormData);
+      setAddDialogOpen(false);
+      setAddFormData(initialFormData);
       await loadClients();
+      toast.success('Client created successfully');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create client';
-      setFormErrors((prev) => ({ ...prev, submit: msg }));
+      setAddFormErrors((prev) => ({ ...prev, submit: msg }));
+      toast.error('Failed to create client', { description: msg });
     } finally {
-      setSubmitting(false);
+      setAddSubmitting(false);
     }
   };
 
-  const handleDialogOpenChange = async (open: boolean) => {
-    setDialogOpen(open);
+  const handleAddDialogOpenChange = async (open: boolean) => {
+    setAddDialogOpen(open);
     if (open) {
-      // Auto-generate client code when opening the dialog
       try {
         const nextCode = await generateNextClientCode();
-        setFormData({ ...initialFormData, code: nextCode });
+        setAddFormData({ ...initialFormData, code: nextCode });
       } catch (err) {
-        console.error('Failed to generate client code:', err);
-        setFormErrors({ code: 'Failed to generate client code. Please try again.' });
+        setAddFormErrors({
+          code: 'Failed to generate client code. Please try again.',
+        });
       }
     } else {
-      setFormData(initialFormData);
-      setFormErrors({});
+      setAddFormData(initialFormData);
+      setAddFormErrors({});
     }
+  };
+
+  // Edit Client handlers
+  const handleEditInputChange = (field: keyof ClientFormData, value: string) => {
+    setEditFormData((prev) => ({ ...prev, [field]: value }));
+    if (editFormErrors[field]) {
+      setEditFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleEditClick = (client: Client) => {
+    setEditingClient(client);
+    setEditFormData({
+      name: client.name || '',
+      code: client.code || '',
+      industry: client.industry || '',
+      description: client.description || '',
+      contact_name: client.contact_name || '',
+      contact_email: client.contact_email || '',
+      contact_phone: client.contact_phone || '',
+      city: client.city || '',
+      country: client.country || '',
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+
+    const errors: Record<string, string> = {};
+    if (!editFormData.name.trim()) errors.name = 'Client name is required';
+    setEditFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setEditSubmitting(true);
+    try {
+      await updateClient(editingClient.id, {
+        name: editFormData.name.trim(),
+        industry: editFormData.industry || null,
+        description: editFormData.description.trim() || null,
+        contact_name: editFormData.contact_name.trim() || null,
+        contact_email: editFormData.contact_email.trim() || null,
+        contact_phone: editFormData.contact_phone.trim() || null,
+        city: editFormData.city.trim() || null,
+        country: editFormData.country.trim() || null,
+      });
+
+      toast.success('Client updated successfully');
+      setEditDialogOpen(false);
+      setEditingClient(null);
+      await loadClients();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update client';
+      toast.error('Failed to update client', { description: msg });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  // Delete Client handlers
+  const handleDeleteClick = (client: Client) => {
+    setDeletingClient(client);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingClient) return;
+
+    setDeleteSubmitting(true);
+    try {
+      await deleteClient(deletingClient.id);
+      toast.success('Client deleted successfully');
+      setDeleteDialogOpen(false);
+      setDeletingClient(null);
+      await loadClients();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete client';
+      toast.error('Failed to delete client', { description: msg });
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  };
+
+  // Client Detail handlers
+  const handleViewClient = (client: Client) => {
+    setViewingClient(client);
+    setDetailSheetOpen(true);
   };
 
   return (
@@ -282,7 +494,9 @@ export default function Clients() {
       {/* ─── Page Header ─── */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Client Archive</h1>
-        <p className="mt-1 text-dna-tundora">Manage all your client operation manuals</p>
+        <p className="mt-1 text-dna-tundora">
+          Manage all your client operation manuals
+        </p>
       </div>
 
       {/* ─── Toolbar: Search + Add ─── */}
@@ -297,7 +511,7 @@ export default function Clients() {
           />
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <Dialog open={addDialogOpen} onOpenChange={handleAddDialogOpenChange}>
           <DialogTrigger asChild>
             <Button className="bg-dna-pomegranate hover:bg-dna-pomegranate/90 text-white gap-2 shrink-0">
               <Plus className="size-4" />
@@ -313,7 +527,7 @@ export default function Clients() {
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+            <form onSubmit={handleAddSubmit} className="space-y-4 mt-2">
               {/* Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="name">
@@ -322,12 +536,14 @@ export default function Clients() {
                 <Input
                   id="name"
                   placeholder="Company name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  aria-invalid={!!formErrors.name}
+                  value={addFormData.name}
+                  onChange={(e) => handleAddInputChange('name', e.target.value)}
+                  aria-invalid={!!addFormErrors.name}
                 />
-                {formErrors.name && (
-                  <p className="text-xs text-dna-pomegranate">{formErrors.name}</p>
+                {addFormErrors.name && (
+                  <p className="text-xs text-dna-pomegranate">
+                    {addFormErrors.name}
+                  </p>
                 )}
               </div>
 
@@ -339,17 +555,19 @@ export default function Clients() {
                 <Input
                   id="code"
                   placeholder="Auto-generated"
-                  value={formData.code}
+                  value={addFormData.code}
                   readOnly
                   disabled
                   className="bg-gray-50 cursor-not-allowed"
-                  aria-invalid={!!formErrors.code}
+                  aria-invalid={!!addFormErrors.code}
                 />
                 <p className="text-xs text-dna-tundora">
                   Client Code is automatically generated by the system and cannot be edited.
                 </p>
-                {formErrors.code && (
-                  <p className="text-xs text-dna-pomegranate">{formErrors.code}</p>
+                {addFormErrors.code && (
+                  <p className="text-xs text-dna-pomegranate">
+                    {addFormErrors.code}
+                  </p>
                 )}
               </div>
 
@@ -357,8 +575,10 @@ export default function Clients() {
               <div className="space-y-1.5">
                 <Label htmlFor="industry">Industry</Label>
                 <Select
-                  value={formData.industry}
-                  onValueChange={(value) => handleInputChange('industry', value)}
+                  value={addFormData.industry}
+                  onValueChange={(value) =>
+                    handleAddInputChange('industry', value)
+                  }
                 >
                   <SelectTrigger id="industry" className="w-full">
                     <SelectValue placeholder="Select an industry" />
@@ -379,8 +599,10 @@ export default function Clients() {
                 <textarea
                   id="description"
                   placeholder="Brief description of the client..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  value={addFormData.description}
+                  onChange={(e) =>
+                    handleAddInputChange('description', e.target.value)
+                  }
                   rows={3}
                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                 />
@@ -396,8 +618,10 @@ export default function Clients() {
                   <Input
                     id="contact_name"
                     placeholder="Full name"
-                    value={formData.contact_name}
-                    onChange={(e) => handleInputChange('contact_name', e.target.value)}
+                    value={addFormData.contact_name}
+                    onChange={(e) =>
+                      handleAddInputChange('contact_name', e.target.value)
+                    }
                   />
                 </div>
 
@@ -410,8 +634,10 @@ export default function Clients() {
                     id="contact_email"
                     type="email"
                     placeholder="email@company.com"
-                    value={formData.contact_email}
-                    onChange={(e) => handleInputChange('contact_email', e.target.value)}
+                    value={addFormData.contact_email}
+                    onChange={(e) =>
+                      handleAddInputChange('contact_email', e.target.value)
+                    }
                   />
                 </div>
 
@@ -423,8 +649,10 @@ export default function Clients() {
                   <Input
                     id="contact_phone"
                     placeholder="+1 234 567 890"
-                    value={formData.contact_phone}
-                    onChange={(e) => handleInputChange('contact_phone', e.target.value)}
+                    value={addFormData.contact_phone}
+                    onChange={(e) =>
+                      handleAddInputChange('contact_phone', e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -439,8 +667,10 @@ export default function Clients() {
                   <Input
                     id="city"
                     placeholder="City name"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    value={addFormData.city}
+                    onChange={(e) =>
+                      handleAddInputChange('city', e.target.value)
+                    }
                   />
                 </div>
 
@@ -452,16 +682,18 @@ export default function Clients() {
                   <Input
                     id="country"
                     placeholder="Country name"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    value={addFormData.country}
+                    onChange={(e) =>
+                      handleAddInputChange('country', e.target.value)
+                    }
                   />
                 </div>
               </div>
 
-              {formErrors.submit && (
+              {addFormErrors.submit && (
                 <div className="flex items-center gap-2 text-sm text-dna-pomegranate bg-red-50 rounded-md px-3 py-2">
                   <AlertCircle className="size-4 shrink-0" />
-                  {formErrors.submit}
+                  {addFormErrors.submit}
                 </div>
               )}
 
@@ -469,16 +701,16 @@ export default function Clients() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleDialogOpenChange(false)}
+                  onClick={() => handleAddDialogOpenChange(false)}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  disabled={submitting}
+                  disabled={addSubmitting}
                   className="bg-dna-pomegranate hover:bg-dna-pomegranate/90 text-white"
                 >
-                  {submitting ? 'Creating...' : 'Create Client'}
+                  {addSubmitting ? 'Creating...' : 'Create Client'}
                 </Button>
               </DialogFooter>
             </form>
@@ -521,26 +753,374 @@ export default function Clients() {
           </h3>
           <p className="text-sm text-dna-tundora max-w-xs">
             {search
-              ? 'Try adjusting your search terms to find what you\'re looking for.'
+              ? "Try adjusting your search terms to find what you're looking for."
               : 'Use the "Add Client" button above to create your first client and start managing operation manuals.'}
           </p>
         </div>
       )}
 
-      {/* ─── Client Grid ─── */}
+      {/* ─── Client Grid (Updated with Actions) ─── */}
       {!loading && !error && filteredClients.length > 0 && (
         <>
           <p className="text-sm text-dna-tundora mb-3">
-            {filteredClients.length} {filteredClients.length === 1 ? 'client' : 'clients'}
+            {filteredClients.length}{' '}
+            {filteredClients.length === 1 ? 'client' : 'clients'}
             {search && ` matching "${search}"`}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredClients.map((client) => (
-              <ClientCard key={client.id} client={client} />
+              <ClientCard
+                key={client.id}
+                client={client}
+                onView={() => handleViewClient(client)}
+                onEdit={() => handleEditClick(client)}
+                onDelete={() => handleDeleteClick(client)}
+              />
             ))}
           </div>
         </>
       )}
+
+      {/* ─── Edit Client Dialog ─── */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>
+              Update client information and contact details.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEditSubmit} className="space-y-4 mt-2">
+            {/* Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_name">
+                Client Name <span className="text-dna-pomegranate">*</span>
+              </Label>
+              <Input
+                id="edit_name"
+                placeholder="Company name"
+                value={editFormData.name}
+                onChange={(e) =>
+                  handleEditInputChange('name', e.target.value)
+                }
+                aria-invalid={!!editFormErrors.name}
+              />
+              {editFormErrors.name && (
+                <p className="text-xs text-dna-pomegranate">
+                  {editFormErrors.name}
+                </p>
+              )}
+            </div>
+
+            {/* Code (read-only) */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_code">
+                Client Code
+              </Label>
+              <Input
+                id="edit_code"
+                value={editFormData.code}
+                readOnly
+                disabled
+                className="bg-gray-50 cursor-not-allowed"
+              />
+              <p className="text-xs text-dna-tundora">
+                Client Code cannot be changed.
+              </p>
+            </div>
+
+            {/* Industry */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_industry">Industry</Label>
+              <Select
+                value={editFormData.industry}
+                onValueChange={(value) =>
+                  handleEditInputChange('industry', value)
+                }
+              >
+                <SelectTrigger id="edit_industry" className="w-full">
+                  <SelectValue placeholder="Select an industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDUSTRY_OPTIONS.map((ind) => (
+                    <SelectItem key={ind} value={ind}>
+                      {ind}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_description">Description</Label>
+              <textarea
+                id="edit_description"
+                placeholder="Brief description of the client..."
+                value={editFormData.description}
+                onChange={(e) =>
+                  handleEditInputChange('description', e.target.value)
+                }
+                rows={3}
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+              />
+            </div>
+
+            {/* Contact Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_contact_name" className="flex items-center gap-1.5">
+                  <Building2 className="size-3.5" />
+                  Contact Name
+                </Label>
+                <Input
+                  id="edit_contact_name"
+                  placeholder="Full name"
+                  value={editFormData.contact_name}
+                  onChange={(e) =>
+                    handleEditInputChange('contact_name', e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_contact_email" className="flex items-center gap-1.5">
+                  <Mail className="size-3.5" />
+                  Contact Email
+                </Label>
+                <Input
+                  id="edit_contact_email"
+                  type="email"
+                  placeholder="email@company.com"
+                  value={editFormData.contact_email}
+                  onChange={(e) =>
+                    handleEditInputChange('contact_email', e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_contact_phone" className="flex items-center gap-1.5">
+                  <Phone className="size-3.5" />
+                  Contact Phone
+                </Label>
+                <Input
+                  id="edit_contact_phone"
+                  placeholder="+1 234 567 890"
+                  value={editFormData.contact_phone}
+                  onChange={(e) =>
+                    handleEditInputChange('contact_phone', e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_city" className="flex items-center gap-1.5">
+                  <MapPin className="size-3.5" />
+                  City
+                </Label>
+                <Input
+                  id="edit_city"
+                  placeholder="City name"
+                  value={editFormData.city}
+                  onChange={(e) =>
+                    handleEditInputChange('city', e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_country" className="flex items-center gap-1.5">
+                  <MapPin className="size-3.5" />
+                  Country
+                </Label>
+                <Input
+                  id="edit_country"
+                  placeholder="Country name"
+                  value={editFormData.country}
+                  onChange={(e) =>
+                    handleEditInputChange('country', e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={editSubmitting}
+                className="bg-dna-pomegranate hover:bg-dna-pomegranate/90 text-white"
+              >
+                {editSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Delete Confirmation Dialog ─── */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Client?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{' '}
+              <strong>{deletingClient?.name}</strong>? This action cannot be
+              undone and will also delete all associated manuals and data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={deleteSubmitting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteSubmitting ? 'Deleting...' : 'Delete Client'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Client Detail Sheet ─── */}
+      <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          {viewingClient && (
+            <>
+              <SheetHeader>
+                <SheetTitle>{viewingClient.name}</SheetTitle>
+                <SheetDescription>
+                  Client Code: {viewingClient.code}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-6">
+                {/* Status & Industry */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-gray-500">Status</Label>
+                    <Badge
+                      variant="outline"
+                      className={`mt-1 ${getStatusClass(viewingClient.status)}`}
+                    >
+                      {getStatusLabel(viewingClient.status)}
+                    </Badge>
+                  </div>
+                  {viewingClient.industry && (
+                    <div>
+                      <Label className="text-xs text-gray-500">Industry</Label>
+                      <Badge
+                        variant="outline"
+                        className={`mt-1 ${getIndustryClass(
+                          viewingClient.industry
+                        )}`}
+                      >
+                        {viewingClient.industry}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                {viewingClient.description && (
+                  <div>
+                    <Label className="text-xs text-gray-500">Description</Label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewingClient.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Contact Information */}
+                <div className="space-y-3">
+                  <Label className="text-xs text-gray-500">
+                    Contact Information
+                  </Label>
+                  {viewingClient.contact_name && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Building2 className="h-4 w-4 text-gray-400" />
+                      <span>{viewingClient.contact_name}</span>
+                    </div>
+                  )}
+                  {viewingClient.contact_email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                      <a
+                        href={`mailto:${viewingClient.contact_email}`}
+                        className="text-dna-pomegranate hover:underline"
+                      >
+                        {viewingClient.contact_email}
+                      </a>
+                    </div>
+                  )}
+                  {viewingClient.contact_phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <a
+                        href={`tel:${viewingClient.contact_phone}`}
+                        className="text-dna-pomegranate hover:underline"
+                      >
+                        {viewingClient.contact_phone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Location */}
+                {(viewingClient.city || viewingClient.country) && (
+                  <div>
+                    <Label className="text-xs text-gray-500">Location</Label>
+                    <div className="flex items-center gap-2 text-sm mt-1">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span>
+                        {viewingClient.city && viewingClient.country
+                          ? `${viewingClient.city}, ${viewingClient.country}`
+                          : viewingClient.city ?? viewingClient.country}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="pt-4 space-y-2">
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => {
+                      setDetailSheetOpen(false);
+                      handleEditClick(viewingClient);
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Client
+                  </Button>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => {
+                      toast.info('Manuals feature coming soon');
+                    }}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    View Manuals
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

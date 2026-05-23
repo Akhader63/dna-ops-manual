@@ -55,20 +55,28 @@ export function useActiveModules() {
     fetchActiveModules();
 
     // Subscribe to realtime changes in modules table
-    const channel = supabase
-      .channel('modules-changes')
+    // Use a unique channel name to avoid conflicts
+    const channelName = `modules-changes-${Date.now()}`;
+    const channel = supabase.channel(channelName);
+
+    channel
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'modules' },
-        () => {
-          console.log('[useActiveModules] Module status changed, refreshing...');
+        (payload) => {
+          console.log('[useActiveModules] Module status changed:', payload);
           fetchActiveModules();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[useActiveModules] Successfully subscribed to module changes');
+        }
+      });
 
     return () => {
-      channel.unsubscribe();
+      console.log('[useActiveModules] Cleaning up subscription');
+      supabase.removeChannel(channel);
     };
   }, []);
 

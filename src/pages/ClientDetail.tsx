@@ -37,6 +37,25 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 // ─── Status Color Map ───
 const statusColors: Record<string, string> = {
@@ -73,6 +92,9 @@ export default function ClientDetail() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<any>({});
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   useEffect(() => {
     loadClient();
@@ -114,8 +136,49 @@ export default function ClientDetail() {
   };
 
   const handleEdit = () => {
-    // Navigate back to clients page with edit dialog open
-    navigate('/clients', { state: { editClientId: client?.id } });
+    if (!client) return;
+    setEditFormData({
+      name: client.name,
+      industry: client.industry || '',
+      description: client.description || '',
+      contact_name: client.contact_name || '',
+      contact_email: client.contact_email || '',
+      contact_phone: client.contact_phone || '',
+      city: client.city || '',
+      country: client.country || '',
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!client) return;
+
+    setEditSubmitting(true);
+    try {
+      const updates: any = {
+        name: editFormData.name.trim(),
+        industry: editFormData.industry || null,
+        description: editFormData.description.trim() || null,
+        contact_name: editFormData.contact_name.trim() || null,
+        contact_email: editFormData.contact_email.trim() || null,
+        contact_phone: editFormData.contact_phone.trim() || null,
+        city: editFormData.city.trim() || null,
+        country: editFormData.country.trim() || null,
+      };
+
+      await updateClient(client.id, updates);
+
+      // Update local state
+      setClient({ ...client, ...updates });
+
+      toast.success('Client updated successfully');
+      setEditDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update client';
+      toast.error('Failed to update client', { description: msg });
+    } finally {
+      setEditSubmitting(false);
+    }
   };
 
   const handleDelete = () => {
@@ -280,135 +343,88 @@ export default function ClientDetail() {
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="flex-1 overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full overflow-hidden">
+            <TabsContent value="overview" className="flex-1 overflow-hidden mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 h-full">
                 {/* Left Column: Client Details */}
-                <Card className="lg:col-span-2 flex flex-col overflow-hidden">
-                  <CardHeader className="pb-2 pt-3 px-4">
-                    <CardTitle className="text-sm">Client Information</CardTitle>
-                    <CardDescription className="text-xs">
-                      Basic details and contact information
-                    </CardDescription>
+                <Card className="lg:col-span-2 flex flex-col overflow-hidden h-full">
+                  <CardHeader className="pb-1 pt-2 px-3 flex-shrink-0">
+                    <CardTitle className="text-xs">Client Information</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 flex-1 overflow-y-auto px-4 py-3">
-                    {/* Description */}
-                    {client.description && (
-                      <div>
-                        <h3 className="text-sm font-medium mb-2">Description</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {client.description}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Contact Information */}
-                    <div>
-                      <h3 className="text-sm font-medium mb-3">Contact Information</h3>
-                      <div className="space-y-3">
-                        {client.contact_name && (
-                          <div className="flex items-center gap-3">
-                            <Users className="size-4 text-muted-foreground shrink-0" />
-                            <span className="text-sm">{client.contact_name}</span>
-                          </div>
-                        )}
-                        {client.contact_email && (
-                          <div className="flex items-center gap-3">
-                            <Mail className="size-4 text-muted-foreground shrink-0" />
-                            <a
-                              href={`mailto:${client.contact_email}`}
-                              className="text-sm text-pomegranate hover:underline"
-                            >
-                              {client.contact_email}
-                            </a>
-                          </div>
-                        )}
-                        {client.contact_phone && (
-                          <div className="flex items-center gap-3">
-                            <Phone className="size-4 text-muted-foreground shrink-0" />
-                            <a
-                              href={`tel:${client.contact_phone}`}
-                              className="text-sm text-pomegranate hover:underline"
-                            >
-                              {client.contact_phone}
-                            </a>
-                          </div>
-                        )}
-                        {client.website && (
-                          <div className="flex items-center gap-3">
-                            <Globe className="size-4 text-muted-foreground shrink-0" />
-                            <a
-                              href={client.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-pomegranate hover:underline"
-                            >
-                              {client.website}
-                            </a>
-                          </div>
-                        )}
-                      </div>
+                  <CardContent className="space-y-1.5 flex-1 overflow-hidden px-3 py-2">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      {client.contact_name && (
+                        <>
+                          <span className="text-muted-foreground">Contact:</span>
+                          <span className="font-medium">{client.contact_name}</span>
+                        </>
+                      )}
+                      {client.contact_email && (
+                        <>
+                          <span className="text-muted-foreground">Email:</span>
+                          <a href={`mailto:${client.contact_email}`} className="text-pomegranate hover:underline truncate">
+                            {client.contact_email}
+                          </a>
+                        </>
+                      )}
+                      {client.contact_phone && (
+                        <>
+                          <span className="text-muted-foreground">Phone:</span>
+                          <a href={`tel:${client.contact_phone}`} className="text-pomegranate hover:underline">
+                            {client.contact_phone}
+                          </a>
+                        </>
+                      )}
+                      {client.city && (
+                        <>
+                          <span className="text-muted-foreground">City:</span>
+                          <span>{client.city}</span>
+                        </>
+                      )}
+                      {client.country && (
+                        <>
+                          <span className="text-muted-foreground">Country:</span>
+                          <span>{client.country}</span>
+                        </>
+                      )}
                     </div>
-
-                    {/* Location */}
-                    {(client.city || client.country || client.address) && (
-                      <div>
-                        <h3 className="text-sm font-medium mb-3">Location</h3>
-                        <div className="space-y-2">
-                          {client.address && (
-                            <div className="flex items-start gap-3">
-                              <MapPin className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                              <span className="text-sm">{client.address}</span>
-                            </div>
-                          )}
-                          {(client.city || client.country) && (
-                            <div className="flex items-center gap-3">
-                              <MapPin className="size-4 text-muted-foreground shrink-0" />
-                              <span className="text-sm">
-                                {[client.city, client.country].filter(Boolean).join(', ')}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
                 {/* Right Column: Quick Stats */}
-                <div className="space-y-2 flex flex-col overflow-y-auto">
+                <div className="space-y-1.5 flex flex-col h-full overflow-hidden">
                   {/* Metadata Card */}
                   <Card className="flex-shrink-0">
-                    <CardHeader className="pb-1 pt-3 px-4">
-                      <CardTitle className="text-sm">Metadata</CardTitle>
+                    <CardHeader className="pb-1 pt-2 px-3">
+                      <CardTitle className="text-xs">Metadata</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-1.5 px-4 py-2">
+                    <CardContent className="space-y-0.5 px-3 py-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Client Code</span>
-                        <span className="text-sm font-medium">{client.code}</span>
+                        <span className="text-muted-foreground">Client Code</span>
+                        <span className="font-medium">{client.code}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Status</span>
-                        <Badge variant="outline" className={getStatusClass(client.status)}>
+                        <span className="text-muted-foreground">Status</span>
+                        <Badge variant="outline" className={`text-xs ${getStatusClass(client.status)}`}>
                           {client.status.replace('_', ' ')}
                         </Badge>
                       </div>
                       {client.industry && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Industry</span>
-                          <Badge variant="outline" className={getIndustryClass(client.industry)}>
+                          <span className="text-muted-foreground">Industry</span>
+                          <Badge variant="outline" className={`text-xs ${getIndustryClass(client.industry)}`}>
                             {client.industry}
                           </Badge>
                         </div>
                       )}
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Created</span>
-                        <span className="text-sm">
+                        <span className="text-muted-foreground">Created</span>
+                        <span>
                           {new Date(client.created_at).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Last Updated</span>
-                        <span className="text-sm">
+                        <span className="text-muted-foreground">Last Updated</span>
+                        <span>
                           {new Date(client.updated_at).toLocaleDateString()}
                         </span>
                       </div>
@@ -417,21 +433,21 @@ export default function ClientDetail() {
 
                   {/* Quick Stats Card */}
                   <Card className="flex-shrink-0">
-                    <CardHeader className="pb-1 pt-3 px-4">
-                      <CardTitle className="text-sm">Quick Stats</CardTitle>
+                    <CardHeader className="pb-1 pt-2 px-3">
+                      <CardTitle className="text-xs">Quick Stats</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-1.5 px-4 py-2">
+                    <CardContent className="space-y-0.5 px-3 py-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Manuals</span>
-                        <span className="text-lg font-semibold">0</span>
+                        <span className="text-muted-foreground">Manuals</span>
+                        <span className="text-base font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Roles</span>
-                        <span className="text-lg font-semibold">0</span>
+                        <span className="text-muted-foreground">Roles</span>
+                        <span className="text-base font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Users</span>
-                        <span className="text-lg font-semibold">0</span>
+                        <span className="text-muted-foreground">Users</span>
+                        <span className="text-base font-semibold">0</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -440,16 +456,13 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Manuals Tab */}
-            <TabsContent value="manuals" className="flex-1 overflow-y-auto">
-              <Card className="h-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Client Manuals</CardTitle>
-                  <CardDescription className="text-xs">
-                    Operation manuals created for this client
-                  </CardDescription>
+            <TabsContent value="manuals" className="flex-1 overflow-hidden mt-0">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
+                  <CardTitle className="text-xs">Client Manuals</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CardContent className="flex-1 flex items-center justify-center">
+                  <div className="flex flex-col items-center justify-center text-center">
                     <FileText className="size-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">No manuals yet</h3>
                     <p className="text-sm text-muted-foreground mb-6">
@@ -465,16 +478,13 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Contacts Tab */}
-            <TabsContent value="contacts" className="flex-1 overflow-y-auto">
-              <Card className="h-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Client Contacts</CardTitle>
-                  <CardDescription className="text-xs">
-                    Manage contact persons for this client
-                  </CardDescription>
+            <TabsContent value="contacts" className="flex-1 overflow-hidden mt-0">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
+                  <CardTitle className="text-xs">Client Contacts</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="flex-1 overflow-y-auto px-3 py-2">
+                  <div className="space-y-2">
                     {/* Primary Contact */}
                     {client.contact_name && (
                       <div className="flex items-start gap-4 p-4 border border-border rounded-lg">
@@ -515,16 +525,13 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Activity Tab */}
-            <TabsContent value="activity" className="flex-1 overflow-y-auto">
-              <Card className="h-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Activity Timeline</CardTitle>
-                  <CardDescription className="text-xs">
-                    Recent changes and activities for this client
-                  </CardDescription>
+            <TabsContent value="activity" className="flex-1 overflow-hidden mt-0">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
+                  <CardTitle className="text-xs">Activity Timeline</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="flex-1 overflow-y-auto px-3 py-2">
+                  <div className="space-y-2">
                     {/* Activity Item */}
                     <div className="flex gap-4">
                       <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
@@ -563,16 +570,13 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Settings Tab */}
-            <TabsContent value="settings" className="flex-1 overflow-y-auto">
-              <Card className="h-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Client Settings</CardTitle>
-                  <CardDescription className="text-xs">
-                    Manage client-specific settings and preferences
-                  </CardDescription>
+            <TabsContent value="settings" className="flex-1 overflow-hidden mt-0">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
+                  <CardTitle className="text-xs">Client Settings</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="flex-1 overflow-y-auto px-3 py-2">
+                  <div className="space-y-3">
                     {/* Status Management */}
                     <div>
                       <h3 className="text-sm font-medium mb-3">Status Management</h3>
@@ -634,6 +638,129 @@ export default function ClientDetail() {
           </Tabs>
         </div>
       </div>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>
+              Update client information
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Client Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_name">Client Name *</Label>
+              <Input
+                id="edit_name"
+                value={editFormData.name || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                placeholder="Enter client name"
+              />
+            </div>
+
+            {/* Industry */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_industry">Industry</Label>
+              <Select
+                value={editFormData.industry || ''}
+                onValueChange={(value) => setEditFormData({ ...editFormData, industry: value })}
+              >
+                <SelectTrigger id="edit_industry">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Construction">Construction</SelectItem>
+                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="Retail">Retail</SelectItem>
+                  <SelectItem value="Healthcare">Healthcare</SelectItem>
+                  <SelectItem value="Logistics">Logistics</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_description">Description</Label>
+              <Textarea
+                id="edit_description"
+                value={editFormData.description || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                placeholder="Brief description of the client"
+                rows={3}
+              />
+            </div>
+
+            {/* Contact Information */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_contact_name">Contact Name</Label>
+                <Input
+                  id="edit_contact_name"
+                  value={editFormData.contact_name || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
+                  placeholder="Contact person name"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_contact_email">Contact Email</Label>
+                <Input
+                  id="edit_contact_email"
+                  type="email"
+                  value={editFormData.contact_email || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
+                  placeholder="email@example.com"
+                />
+              </div>
+            </div>
+
+            {/* Contact Phone */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_contact_phone">Contact Phone</Label>
+              <PhoneInput
+                value={editFormData.contact_phone || ''}
+                onChange={(value) => setEditFormData({ ...editFormData, contact_phone: value })}
+                placeholder="Phone number"
+              />
+            </div>
+
+            {/* Location */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_city">City</Label>
+                <Input
+                  id="edit_city"
+                  value={editFormData.city || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit_country">Country</Label>
+                <Input
+                  id="edit_country"
+                  value={editFormData.country || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                  placeholder="Country"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={editSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSubmit} disabled={editSubmitting || !editFormData.name?.trim()}>
+              {editSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

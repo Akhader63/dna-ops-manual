@@ -10,6 +10,7 @@ import TwoFactorSetup from './pages/TwoFactorSetup';
 import TwoFactorVerify from './pages/TwoFactorVerify';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
+import ClientDetail from './pages/ClientDetail';
 import ManualBuilder from './pages/ManualBuilder';
 import ModuleLibrary from './pages/ModuleLibrary';
 import TransactionDetail from './pages/TransactionDetail';
@@ -47,6 +48,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/clients/:id" element={<ClientDetail />} />
             <Route path="/manual-builder" element={<ManualBuilder />} />
             <Route path="/module-library" element={<ModuleLibrary />} />
             <Route path="/transactions/:id" element={<TransactionDetail />} />

@@ -1,0 +1,111 @@
+// Country data with codes, flags, and dial codes
+export interface Country {
+  code: string; // ISO 3166-1 alpha-2
+  name: string;
+  dial_code: string;
+  flag: string; // Emoji flag
+}
+
+export const countries: Country[] = [
+  { code: 'AE', name: 'United Arab Emirates', dial_code: '+971', flag: '🇦🇪' },
+  { code: 'AF', name: 'Afghanistan', dial_code: '+93', flag: '🇦🇫' },
+  { code: 'AL', name: 'Albania', dial_code: '+355', flag: '🇦🇱' },
+  { code: 'AM', name: 'Armenia', dial_code: '+374', flag: '🇦🇲' },
+  { code: 'AR', name: 'Argentina', dial_code: '+54', flag: '🇦🇷' },
+  { code: 'AT', name: 'Austria', dial_code: '+43', flag: '🇦🇹' },
+  { code: 'AU', name: 'Australia', dial_code: '+61', flag: '🇦🇺' },
+  { code: 'AZ', name: 'Azerbaijan', dial_code: '+994', flag: '🇦🇿' },
+  { code: 'BA', name: 'Bosnia and Herzegovina', dial_code: '+387', flag: '🇧🇦' },
+  { code: 'BD', name: 'Bangladesh', dial_code: '+880', flag: '🇧🇩' },
+  { code: 'BE', name: 'Belgium', dial_code: '+32', flag: '🇧🇪' },
+  { code: 'BG', name: 'Bulgaria', dial_code: '+359', flag: '🇧🇬' },
+  { code: 'BH', name: 'Bahrain', dial_code: '+973', flag: '🇧🇭' },
+  { code: 'BR', name: 'Brazil', dial_code: '+55', flag: '🇧🇷' },
+  { code: 'CA', name: 'Canada', dial_code: '+1', flag: '🇨🇦' },
+  { code: 'CH', name: 'Switzerland', dial_code: '+41', flag: '🇨🇭' },
+  { code: 'CN', name: 'China', dial_code: '+86', flag: '🇨🇳' },
+  { code: 'CO', name: 'Colombia', dial_code: '+57', flag: '🇨🇴' },
+  { code: 'CZ', name: 'Czech Republic', dial_code: '+420', flag: '🇨🇿' },
+  { code: 'DE', name: 'Germany', dial_code: '+49', flag: '🇩🇪' },
+  { code: 'DK', name: 'Denmark', dial_code: '+45', flag: '🇩🇰' },
+  { code: 'DZ', name: 'Algeria', dial_code: '+213', flag: '🇩🇿' },
+  { code: 'EG', name: 'Egypt', dial_code: '+20', flag: '🇪🇬' },
+  { code: 'ES', name: 'Spain', dial_code: '+34', flag: '🇪🇸' },
+  { code: 'FI', name: 'Finland', dial_code: '+358', flag: '🇫🇮' },
+  { code: 'FR', name: 'France', dial_code: '+33', flag: '🇫🇷' },
+  { code: 'GB', name: 'United Kingdom', dial_code: '+44', flag: '🇬🇧' },
+  { code: 'GR', name: 'Greece', dial_code: '+30', flag: '🇬🇷' },
+  { code: 'HK', name: 'Hong Kong', dial_code: '+852', flag: '🇭🇰' },
+  { code: 'HR', name: 'Croatia', dial_code: '+385', flag: '🇭🇷' },
+  { code: 'HU', name: 'Hungary', dial_code: '+36', flag: '🇭🇺' },
+  { code: 'ID', name: 'Indonesia', dial_code: '+62', flag: '🇮🇩' },
+  { code: 'IE', name: 'Ireland', dial_code: '+353', flag: '🇮🇪' },
+  { code: 'IL', name: 'Israel', dial_code: '+972', flag: '🇮🇱' },
+  { code: 'IN', name: 'India', dial_code: '+91', flag: '🇮🇳' },
+  { code: 'IQ', name: 'Iraq', dial_code: '+964', flag: '🇮🇶' },
+  { code: 'IR', name: 'Iran', dial_code: '+98', flag: '🇮🇷' },
+  { code: 'IT', name: 'Italy', dial_code: '+39', flag: '🇮🇹' },
+  { code: 'JO', name: 'Jordan', dial_code: '+962', flag: '🇯🇴' },
+  { code: 'JP', name: 'Japan', dial_code: '+81', flag: '🇯🇵' },
+  { code: 'KE', name: 'Kenya', dial_code: '+254', flag: '🇰🇪' },
+  { code: 'KR', name: 'South Korea', dial_code: '+82', flag: '🇰🇷' },
+  { code: 'KW', name: 'Kuwait', dial_code: '+965', flag: '🇰🇼' },
+  { code: 'KZ', name: 'Kazakhstan', dial_code: '+7', flag: '🇰🇿' },
+  { code: 'LB', name: 'Lebanon', dial_code: '+961', flag: '🇱🇧' },
+  { code: 'LK', name: 'Sri Lanka', dial_code: '+94', flag: '🇱🇰' },
+  { code: 'LY', name: 'Libya', dial_code: '+218', flag: '🇱🇾' },
+  { code: 'MA', name: 'Morocco', dial_code: '+212', flag: '🇲🇦' },
+  { code: 'MX', name: 'Mexico', dial_code: '+52', flag: '🇲🇽' },
+  { code: 'MY', name: 'Malaysia', dial_code: '+60', flag: '🇲🇾' },
+  { code: 'NG', name: 'Nigeria', dial_code: '+234', flag: '🇳🇬' },
+  { code: 'NL', name: 'Netherlands', dial_code: '+31', flag: '🇳🇱' },
+  { code: 'NO', name: 'Norway', dial_code: '+47', flag: '🇳🇴' },
+  { code: 'NZ', name: 'New Zealand', dial_code: '+64', flag: '🇳🇿' },
+  { code: 'OM', name: 'Oman', dial_code: '+968', flag: '🇴🇲' },
+  { code: 'PK', name: 'Pakistan', dial_code: '+92', flag: '🇵🇰' },
+  { code: 'PL', name: 'Poland', dial_code: '+48', flag: '🇵🇱' },
+  { code: 'PT', name: 'Portugal', dial_code: '+351', flag: '🇵🇹' },
+  { code: 'QA', name: 'Qatar', dial_code: '+974', flag: '🇶🇦' },
+  { code: 'RO', name: 'Romania', dial_code: '+40', flag: '🇷🇴' },
+  { code: 'RU', name: 'Russia', dial_code: '+7', flag: '🇷🇺' },
+  { code: 'SA', name: 'Saudi Arabia', dial_code: '+966', flag: '🇸🇦' },
+  { code: 'SD', name: 'Sudan', dial_code: '+249', flag: '🇸🇩' },
+  { code: 'SE', name: 'Sweden', dial_code: '+46', flag: '🇸🇪' },
+  { code: 'SG', name: 'Singapore', dial_code: '+65', flag: '🇸🇬' },
+  { code: 'SI', name: 'Slovenia', dial_code: '+386', flag: '🇸🇮' },
+  { code: 'SK', name: 'Slovakia', dial_code: '+421', flag: '🇸🇰' },
+  { code: 'SY', name: 'Syria', dial_code: '+963', flag: '🇸🇾' },
+  { code: 'TH', name: 'Thailand', dial_code: '+66', flag: '🇹🇭' },
+  { code: 'TN', name: 'Tunisia', dial_code: '+216', flag: '🇹🇳' },
+  { code: 'TR', name: 'Turkey', dial_code: '+90', flag: '🇹🇷' },
+  { code: 'TW', name: 'Taiwan', dial_code: '+886', flag: '🇹🇼' },
+  { code: 'UA', name: 'Ukraine', dial_code: '+380', flag: '🇺🇦' },
+  { code: 'US', name: 'United States', dial_code: '+1', flag: '🇺🇸' },
+  { code: 'VN', name: 'Vietnam', dial_code: '+84', flag: '🇻🇳' },
+  { code: 'YE', name: 'Yemen', dial_code: '+967', flag: '🇾🇪' },
+  { code: 'ZA', name: 'South Africa', dial_code: '+27', flag: '🇿🇦' },
+];
+
+// Helper to parse phone number and extract country code
+export function parsePhoneNumber(fullPhone: string): { countryCode: string; number: string } {
+  if (!fullPhone) return { countryCode: '+1', number: '' };
+  
+  // Try to match common patterns like +XXX XXXXXXXXX
+  const match = fullPhone.match(/^(\+\d{1,4})\s*(.*)$/);
+  
+  if (match) {
+    return {
+      countryCode: match[1],
+      number: match[2].trim(),
+    };
+  }
+  
+  // Default to +1 (US) if can't parse
+  return { countryCode: '+1', number: fullPhone };
+}
+
+// Helper to format phone number
+export function formatPhoneNumber(countryCode: string, number: string): string {
+  if (!number) return '';
+  return `${countryCode} ${number}`.trim();
+}

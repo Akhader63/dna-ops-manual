@@ -114,7 +114,54 @@ export async function updateClient(id: string, updates: Partial<Client>) {
   return data as Client;
 }
 
+// ─── CHECK CLIENT DEPENDENCIES ───
+export async function checkClientDependencies(clientId: string): Promise<{
+  hasManuals: boolean;
+  hasRoles: boolean;
+  manualsCount: number;
+  rolesCount: number;
+}> {
+  // Check for manuals
+  const { count: manualsCount, error: manualsError } = await supabase
+    .from('client_manuals')
+    .select('*', { count: 'exact', head: true })
+    .eq('client_id', clientId);
+
+  if (manualsError) throw manualsError;
+
+  // Check for roles
+  const { count: rolesCount, error: rolesError } = await supabase
+    .from('roles')
+    .select('*', { count: 'exact', head: true })
+    .eq('client_id', clientId);
+
+  if (rolesError) throw rolesError;
+
+  return {
+    hasManuals: (manualsCount ?? 0) > 0,
+    hasRoles: (rolesCount ?? 0) > 0,
+    manualsCount: manualsCount ?? 0,
+    rolesCount: rolesCount ?? 0,
+  };
+}
+
 export async function deleteClient(id: string) {
+  // Check for dependencies first
+  const dependencies = await checkClientDependencies(id);
+
+  if (dependencies.hasManuals || dependencies.hasRoles) {
+    const messages: string[] = [];
+    if (dependencies.hasManuals) {
+      messages.push(`${dependencies.manualsCount} manual(s)`);
+    }
+    if (dependencies.hasRoles) {
+      messages.push(`${dependencies.rolesCount} role(s)`);
+    }
+    throw new Error(
+      `Cannot delete client. It has associated ${messages.join(' and ')}. Please mark the client as inactive instead.`
+    );
+  }
+
   const { error } = await supabase.from('clients').delete().eq('id', id);
   if (error) throw error;
 }

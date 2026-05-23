@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   Plus,
@@ -68,6 +69,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 // ─── Industry Color Map ───
 const industryColors: Record<string, string> = {
@@ -263,6 +265,7 @@ const INDUSTRY_OPTIONS = [
 
 // ─── Main Clients Page (Enhanced) ───
 export default function Clients() {
+  const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -485,8 +488,7 @@ export default function Clients() {
 
   // Client Detail handlers
   const handleViewClient = (client: Client) => {
-    setViewingClient(client);
-    setDetailSheetOpen(true);
+    navigate(`/clients/${client.id}`);
   };
 
   return (
@@ -646,13 +648,12 @@ export default function Clients() {
                     <Phone className="size-3.5" />
                     Contact Phone
                   </Label>
-                  <Input
-                    id="contact_phone"
-                    placeholder="+1 234 567 890"
+                  <PhoneInput
                     value={addFormData.contact_phone}
-                    onChange={(e) =>
-                      handleAddInputChange('contact_phone', e.target.value)
+                    onChange={(value) =>
+                      handleAddInputChange('contact_phone', value)
                     }
+                    placeholder="Phone number"
                   />
                 </div>
               </div>
@@ -905,13 +906,12 @@ export default function Clients() {
                   <Phone className="size-3.5" />
                   Contact Phone
                 </Label>
-                <Input
-                  id="edit_contact_phone"
-                  placeholder="+1 234 567 890"
+                <PhoneInput
                   value={editFormData.contact_phone}
-                  onChange={(e) =>
-                    handleEditInputChange('contact_phone', e.target.value)
+                  onChange={(value) =>
+                    handleEditInputChange('contact_phone', value)
                   }
+                  placeholder="Phone number"
                 />
               </div>
             </div>

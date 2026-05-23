@@ -189,10 +189,10 @@ export default function ClientDetail() {
 
   // ─── Main Content ───
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border bg-card">
-        <div className="max-w-[1600px] mx-auto px-8 py-6">
+      <div className="border-b border-border bg-card flex-shrink-0">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left: Back button and client info */}
             <div className="flex items-center gap-4">
@@ -261,9 +261,9 @@ export default function ClientDetail() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-[1600px] mx-auto px-8 py-8">
-          <Tabs defaultValue="overview" className="space-y-6">
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="max-w-[1600px] mx-auto px-6 py-4 flex-1 flex flex-col overflow-hidden w-full">
+          <Tabs defaultValue="overview" className="flex flex-col flex-1 overflow-hidden">
             <TabsList className="grid w-full max-w-2xl grid-cols-5">
               <TabsTrigger value="overview">
                 <Building2 className="size-4 mr-2" />
@@ -288,17 +288,17 @@ export default function ClientDetail() {
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <TabsContent value="overview" className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
                 {/* Left Column: Client Details */}
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Client Information</CardTitle>
-                    <CardDescription>
+                <Card className="lg:col-span-2 flex flex-col overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Client Information</CardTitle>
+                    <CardDescription className="text-xs">
                       Basic details and contact information
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 flex-1 overflow-y-auto">
                     {/* Description */}
                     {client.description && (
                       <div>
@@ -383,13 +383,13 @@ export default function ClientDetail() {
                 </Card>
 
                 {/* Right Column: Quick Stats */}
-                <div className="space-y-6">
+                <div className="space-y-3 flex flex-col overflow-y-auto">
                   {/* Metadata Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Metadata</CardTitle>
+                  <Card className="flex-shrink-0">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Metadata</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Client Code</span>
                         <span className="text-sm font-medium">{client.code}</span>
@@ -424,22 +424,22 @@ export default function ClientDetail() {
                   </Card>
 
                   {/* Quick Stats Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quick Stats</CardTitle>
+                  <Card className="flex-shrink-0">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Quick Stats</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Manuals</span>
-                        <span className="text-2xl font-semibold">0</span>
+                        <span className="text-xs text-muted-foreground">Manuals</span>
+                        <span className="text-xl font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Roles</span>
-                        <span className="text-2xl font-semibold">0</span>
+                        <span className="text-xs text-muted-foreground">Roles</span>
+                        <span className="text-xl font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Users</span>
-                        <span className="text-2xl font-semibold">0</span>
+                        <span className="text-xs text-muted-foreground">Users</span>
+                        <span className="text-xl font-semibold">0</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -448,16 +448,16 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Manuals Tab */}
-            <TabsContent value="manuals">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Client Manuals</CardTitle>
-                  <CardDescription>
+            <TabsContent value="manuals" className="flex-1 overflow-y-auto">
+              <Card className="h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Client Manuals</CardTitle>
+                  <CardDescription className="text-xs">
                     Operation manuals created for this client
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
                     <FileText className="size-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">No manuals yet</h3>
                     <p className="text-sm text-muted-foreground mb-6">
@@ -473,16 +473,16 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Contacts Tab */}
-            <TabsContent value="contacts">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Client Contacts</CardTitle>
-                  <CardDescription>
+            <TabsContent value="contacts" className="flex-1 overflow-y-auto">
+              <Card className="h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Client Contacts</CardTitle>
+                  <CardDescription className="text-xs">
                     Manage contact persons for this client
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {/* Primary Contact */}
                     {client.contact_name && (
                       <div className="flex items-start gap-4 p-4 border border-border rounded-lg">
@@ -523,16 +523,16 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Activity Tab */}
-            <TabsContent value="activity">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Activity Timeline</CardTitle>
-                  <CardDescription>
+            <TabsContent value="activity" className="flex-1 overflow-y-auto">
+              <Card className="h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Activity Timeline</CardTitle>
+                  <CardDescription className="text-xs">
                     Recent changes and activities for this client
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {/* Activity Item */}
                     <div className="flex gap-4">
                       <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
@@ -571,16 +571,16 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Settings Tab */}
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Client Settings</CardTitle>
-                  <CardDescription>
+            <TabsContent value="settings" className="flex-1 overflow-y-auto">
+              <Card className="h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Client Settings</CardTitle>
+                  <CardDescription className="text-xs">
                     Manage client-specific settings and preferences
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {/* Status Management */}
                     <div>
                       <h3 className="text-sm font-medium mb-3">Status Management</h3>

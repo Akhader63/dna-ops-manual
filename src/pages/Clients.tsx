@@ -9,11 +9,8 @@ import {
   Phone,
   AlertCircle,
   RefreshCw,
-  MoreVertical,
   Pencil,
   Trash2,
-  Eye,
-  FileText,
 } from 'lucide-react';
 import {
   getClients,
@@ -44,13 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Sheet,
   SheetContent,
@@ -120,54 +110,21 @@ function ClientSkeletonCard() {
   );
 }
 
-// ─── Client Card (Updated with Actions Menu) ───
+// ─── Client Card (Simplified - Click to View Details) ───
 function ClientCard({
   client,
   onView,
-  onEdit,
-  onDelete,
 }: {
   client: Client;
   onView: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-dna-silver/50 shadow-sm p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-md group relative">
-      {/* Actions Menu */}
-      <div className="absolute top-3 right-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onView}>
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Client
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {}}>
-              <FileText className="mr-2 h-4 w-4" />
-              View Manuals
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onDelete} className="text-red-600">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Client
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Card Content */}
-      <div className="cursor-pointer" onClick={onView}>
+    <div
+      className="bg-white rounded-lg border border-dna-silver/50 shadow-sm p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-md group cursor-pointer"
+      onClick={onView}
+    >
         {/* Top: Name + Industry Badge */}
-        <div className="flex items-start justify-between gap-3 mb-3 pr-8">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-dna-pomegranate transition-colors">
             {client.name}
           </h3>
@@ -774,8 +731,6 @@ export default function Clients() {
                 key={client.id}
                 client={client}
                 onView={() => handleViewClient(client)}
-                onEdit={() => handleEditClick(client)}
-                onDelete={() => handleDeleteClick(client)}
               />
             ))}
           </div>

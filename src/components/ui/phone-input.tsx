@@ -85,11 +85,11 @@ export function PhoneInput({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="start">
+        <PopoverContent className="w-[320px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search country..." />
+            <CommandInput placeholder="Search country..." className="h-12 border-b" />
             <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup className="max-h-[300px] overflow-auto">
+            <CommandGroup className="max-h-[280px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {countries.map((country) => (
                 <CommandItem
                   key={country.code}

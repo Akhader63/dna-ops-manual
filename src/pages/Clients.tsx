@@ -182,7 +182,6 @@ function ClientCard({
             )}
           </div>
         )}
-      </div>
     </div>
   );
 }

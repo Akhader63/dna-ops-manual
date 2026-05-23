@@ -61,7 +61,7 @@ export default function UsersTab({}: UsersTabProps) {
   const [departments, setDepartments] = useState<Array<{id: string; name: string; is_active: boolean}>>([]);
 
   // Fetch users
-  const fetchUsers = async () => {
+  const fetchUsers = async (highlightUserId?: string) => {
     console.log('[UsersTab] fetchUsers called - refreshing user list...');
     setLoading(true);
     setError(null);
@@ -73,12 +73,21 @@ export default function UsersTab({}: UsersTabProps) {
 
       if (error) throw error;
       console.log('[UsersTab] Loaded users:', data?.length || 0, data);
+
+      // If we're looking for a specific user (e.g., one we just edited), log it
+      if (highlightUserId && data) {
+        const targetUser = data.find((u: any) => u.id === highlightUserId);
+        console.log('[UsersTab] 🔍 Specific user data after refresh:', targetUser);
+      }
+
       setUsers((data || []) as UserAccount[]);
       setFilteredUsers((data || []) as UserAccount[]);
+      return data;
     } catch (err) {
       console.error('[UsersTab] Error fetching users:', err);
       setError((err as Error).message || 'Failed to load users');
       toast.error('Failed to load users');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -682,11 +691,15 @@ export default function UsersTab({}: UsersTabProps) {
             setShowEditUserDialog(false);
             setSelectedUser(null);
           }}
-          onSuccess={() => {
+          onSuccess={async () => {
             console.log('[UsersTab] EditUser onSuccess - refreshing all data...');
+            const editedUserId = selectedUser?.id;
             setShowEditUserDialog(false);
             setSelectedUser(null);
-            fetchUsers();
+
+            // Fetch users and highlight the edited one
+            await fetchUsers(editedUserId);
+
             fetchPositions();
             fetchDepartments();
           }}

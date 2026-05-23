@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -16,25 +16,27 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { useActiveModules, isModuleActive } from '@/hooks/useActiveModules';
 
 interface NavItem {
   label: string;
   icon: React.ElementType;
   path: string;
+  moduleCode: string; // Maps to modules.code in database
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { label: 'Clients', icon: Building2, path: '/clients' },
-  { label: 'Manual Builder', icon: FilePlus, path: '/manual-builder' },
-  { label: 'Module Library', icon: Library, path: '/module-library' },
-  { label: 'Approval Gateways', icon: ShieldCheck, path: '/approval-gateways' },
-  { label: 'Role Setup', icon: Users, path: '/role-setup' },
-  { label: 'Roadmap Generator', icon: GitBranch, path: '/roadmap-generator' },
-  { label: 'Manual Preview', icon: Eye, path: '/manual-preview' },
-  { label: 'Project Tracker', icon: GanttChart, path: '/project-tracker' },
-  { label: 'Issues Tracker', icon: Bug, path: '/issues-tracker' },
-  { label: 'Settings', icon: Settings, path: '/settings' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/', moduleCode: 'dashboard' },
+  { label: 'Clients', icon: Building2, path: '/clients', moduleCode: 'clients' },
+  { label: 'Manual Builder', icon: FilePlus, path: '/manual-builder', moduleCode: 'manual_builder' },
+  { label: 'Module Library', icon: Library, path: '/module-library', moduleCode: 'module_library' },
+  { label: 'Approval Gateways', icon: ShieldCheck, path: '/approval-gateways', moduleCode: 'approval_gateways' },
+  { label: 'Role Setup', icon: Users, path: '/role-setup', moduleCode: 'role_setup' },
+  { label: 'Roadmap Generator', icon: GitBranch, path: '/roadmap-generator', moduleCode: 'roadmap_generator' },
+  { label: 'Manual Preview', icon: Eye, path: '/manual-preview', moduleCode: 'manual_preview' },
+  { label: 'Project Tracker', icon: GanttChart, path: '/project-tracker', moduleCode: 'project_tracker' },
+  { label: 'Issues Tracker', icon: Bug, path: '/issues-tracker', moduleCode: 'issues_tracker' },
+  { label: 'Settings', icon: Settings, path: '/settings', moduleCode: 'settings' }, // Always visible
 ];
 
 const ease = [0.16, 1, 0.3, 1] as [number, number, number, number];
@@ -47,6 +49,19 @@ export default function Navbar({ onCollapseChange }: NavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Fetch active modules from database
+  const { activeModules, loading } = useActiveModules();
+
+  // Filter nav items to only show active modules
+  const visibleNavItems = useMemo(() => {
+    if (loading) {
+      // While loading, show all items to avoid flickering
+      return navItems;
+    }
+
+    return navItems.filter((item) => isModuleActive(item.moduleCode, activeModules));
+  }, [activeModules, loading]);
 
   const handleToggle = () => {
     const next = !collapsed;
@@ -81,7 +96,7 @@ export default function Navbar({ onCollapseChange }: NavbarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4">
         <ul className="flex flex-col gap-1 px-3">
-          {navItems.map((item, index) => {
+          {visibleNavItems.map((item, index) => {
             const active = isActive(item.path);
             const Icon = item.icon;
 

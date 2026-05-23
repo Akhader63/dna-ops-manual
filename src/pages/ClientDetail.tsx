@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
@@ -18,20 +18,14 @@ import {
   AlertCircle,
   Plus,
 } from 'lucide-react';
-import { getClientById, deleteClient } from '@/services/dataService';
+import { getClientById, deleteClient, updateClient } from '@/services/dataService';
 import type { Client } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,10 +72,21 @@ export default function ClientDetail() {
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   useEffect(() => {
     loadClient();
   }, [id]);
+
+  // Set document title for breadcrumb
+  useEffect(() => {
+    if (client) {
+      document.title = `${client.name} - DNA Ops Manual`;
+    }
+    return () => {
+      document.title = 'DNA Ops Manual';
+    };
+  }, [client]);
 
   const loadClient = async () => {
     if (!id) {
@@ -131,6 +136,22 @@ export default function ClientDetail() {
     } finally {
       setDeleteSubmitting(false);
       setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: 'active' | 'inactive' | 'on_hold') => {
+    if (!client || client.status === newStatus) return;
+
+    setStatusUpdating(true);
+    try {
+      await updateClient(client.id, { status: newStatus });
+      setClient({ ...client, status: newStatus });
+      toast.success(`Client status updated to ${newStatus.replace('_', ' ')}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update status';
+      toast.error('Failed to update status', { description: msg });
+    } finally {
+      setStatusUpdating(false);
     }
   };
 
@@ -192,7 +213,7 @@ export default function ClientDetail() {
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card flex-shrink-0">
-        <div className="max-w-[1600px] mx-auto px-6 py-4">
+        <div className="max-w-[1600px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Back button and client info */}
             <div className="flex items-center gap-4">
@@ -228,77 +249,48 @@ export default function ClientDetail() {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleEdit}>
-                <Pencil className="size-4 mr-2" />
-                Edit Client
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MoreVertical className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <Pencil className="size-4 mr-2" />
-                    Edit Client
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="size-4 mr-2" />
-                    Delete Client
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <Button variant="outline" onClick={handleEdit}>
+              <Pencil className="size-4 mr-2" />
+              Edit Client
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="max-w-[1600px] mx-auto px-6 py-4 flex-1 flex flex-col overflow-hidden w-full">
-          <Tabs defaultValue="overview" className="flex flex-col flex-1 overflow-hidden">
-            <TabsList className="grid w-full max-w-2xl grid-cols-5">
-              <TabsTrigger value="overview">
-                <Building2 className="size-4 mr-2" />
+        <div className="max-w-[1600px] mx-auto px-6 py-3 flex-1 flex flex-col overflow-hidden w-full">
+          <Tabs defaultValue="overview" className="flex flex-col flex-1 overflow-hidden space-y-2">
+            <TabsList className="grid w-full max-w-2xl grid-cols-5 h-8">
+              <TabsTrigger value="overview" className="text-xs">
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="manuals">
-                <FileText className="size-4 mr-2" />
+              <TabsTrigger value="manuals" className="text-xs">
                 Manuals
               </TabsTrigger>
-              <TabsTrigger value="contacts">
-                <Users className="size-4 mr-2" />
+              <TabsTrigger value="contacts" className="text-xs">
                 Contacts
               </TabsTrigger>
-              <TabsTrigger value="activity">
-                <Activity className="size-4 mr-2" />
+              <TabsTrigger value="activity" className="text-xs">
                 Activity
               </TabsTrigger>
-              <TabsTrigger value="settings">
-                <Settings className="size-4 mr-2" />
+              <TabsTrigger value="settings" className="text-xs">
                 Settings
               </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+            <TabsContent value="overview" className="flex-1 overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full overflow-hidden">
                 {/* Left Column: Client Details */}
                 <Card className="lg:col-span-2 flex flex-col overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Client Information</CardTitle>
+                  <CardHeader className="pb-2 pt-3 px-4">
+                    <CardTitle className="text-sm">Client Information</CardTitle>
                     <CardDescription className="text-xs">
                       Basic details and contact information
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4 flex-1 overflow-y-auto">
+                  <CardContent className="space-y-3 flex-1 overflow-y-auto px-4 py-3">
                     {/* Description */}
                     {client.description && (
                       <div>
@@ -383,13 +375,13 @@ export default function ClientDetail() {
                 </Card>
 
                 {/* Right Column: Quick Stats */}
-                <div className="space-y-3 flex flex-col overflow-y-auto">
+                <div className="space-y-2 flex flex-col overflow-y-auto">
                   {/* Metadata Card */}
                   <Card className="flex-shrink-0">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Metadata</CardTitle>
+                    <CardHeader className="pb-1 pt-3 px-4">
+                      <CardTitle className="text-sm">Metadata</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardContent className="space-y-1.5 px-4 py-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Client Code</span>
                         <span className="text-sm font-medium">{client.code}</span>
@@ -425,21 +417,21 @@ export default function ClientDetail() {
 
                   {/* Quick Stats Card */}
                   <Card className="flex-shrink-0">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Quick Stats</CardTitle>
+                    <CardHeader className="pb-1 pt-3 px-4">
+                      <CardTitle className="text-sm">Quick Stats</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardContent className="space-y-1.5 px-4 py-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Manuals</span>
-                        <span className="text-xl font-semibold">0</span>
+                        <span className="text-lg font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Roles</span>
-                        <span className="text-xl font-semibold">0</span>
+                        <span className="text-lg font-semibold">0</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Users</span>
-                        <span className="text-xl font-semibold">0</span>
+                        <span className="text-lg font-semibold">0</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -588,18 +580,24 @@ export default function ClientDetail() {
                         <Button
                           variant={client.status === 'active' ? 'default' : 'outline'}
                           size="sm"
+                          onClick={() => handleStatusChange('active')}
+                          disabled={statusUpdating || client.status === 'active'}
                         >
                           Active
                         </Button>
                         <Button
                           variant={client.status === 'inactive' ? 'default' : 'outline'}
                           size="sm"
+                          onClick={() => handleStatusChange('inactive')}
+                          disabled={statusUpdating || client.status === 'inactive'}
                         >
                           Inactive
                         </Button>
                         <Button
                           variant={client.status === 'on_hold' ? 'default' : 'outline'}
                           size="sm"
+                          onClick={() => handleStatusChange('on_hold')}
+                          disabled={statusUpdating || client.status === 'on_hold'}
                         >
                           On Hold
                         </Button>

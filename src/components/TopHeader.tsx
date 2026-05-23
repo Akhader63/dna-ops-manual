@@ -32,12 +32,24 @@ function getBreadcrumbs(pathname: string): string[] {
 
   const crumbs: string[] = ['Home'];
   let currentPath = '';
-  for (const segment of segments) {
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
     currentPath += '/' + segment;
     if (routeNames[currentPath]) {
       crumbs.push(routeNames[currentPath]);
     } else {
-      crumbs.push(segment.charAt(0).toUpperCase() + segment.slice(1));
+      // Check if this is a client detail page (UUID pattern)
+      if (i === 1 && segments[0] === 'clients' && segment.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        // Extract client name from document title
+        const titleParts = document.title.split(' - ');
+        if (titleParts.length > 1 && titleParts[0] !== 'DNA Ops Manual') {
+          crumbs.push(titleParts[0]);
+        } else {
+          crumbs.push('Client Details');
+        }
+      } else {
+        crumbs.push(segment.charAt(0).toUpperCase() + segment.slice(1));
+      }
     }
   }
   return crumbs;

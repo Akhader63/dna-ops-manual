@@ -61,8 +61,7 @@ export default function UsersTab({}: UsersTabProps) {
   const [departments, setDepartments] = useState<Array<{id: string; name: string; is_active: boolean}>>([]);
 
   // Fetch users
-  const fetchUsers = async (highlightUserId?: string) => {
-    console.log('[UsersTab] fetchUsers called - refreshing user list...');
+  const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -72,14 +71,6 @@ export default function UsersTab({}: UsersTabProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('[UsersTab] Loaded users:', data?.length || 0, data);
-
-      // If we're looking for a specific user (e.g., one we just edited), log it
-      if (highlightUserId && data) {
-        const targetUser = data.find((u: any) => u.id === highlightUserId);
-        console.log('[UsersTab] 🔍 Specific user data after refresh:', targetUser);
-      }
-
       setUsers((data || []) as UserAccount[]);
       setFilteredUsers((data || []) as UserAccount[]);
       return data;
@@ -103,7 +94,6 @@ export default function UsersTab({}: UsersTabProps) {
 
       if (error) throw error;
       setPositions(data || []);
-      console.log('[UsersTab] Loaded positions:', data?.length || 0);
     } catch (error) {
       console.error('[UsersTab] Error fetching positions:', error);
     }
@@ -119,7 +109,6 @@ export default function UsersTab({}: UsersTabProps) {
 
       if (error) throw error;
       setDepartments(data || []);
-      console.log('[UsersTab] Loaded departments:', data?.length || 0);
     } catch (error) {
       console.error('[UsersTab] Error fetching departments:', error);
     }
@@ -691,15 +680,10 @@ export default function UsersTab({}: UsersTabProps) {
             setShowEditUserDialog(false);
             setSelectedUser(null);
           }}
-          onSuccess={async () => {
-            console.log('[UsersTab] EditUser onSuccess - refreshing all data...');
-            const editedUserId = selectedUser?.id;
+          onSuccess={() => {
             setShowEditUserDialog(false);
             setSelectedUser(null);
-
-            // Fetch users and highlight the edited one
-            await fetchUsers(editedUserId);
-
+            fetchUsers();
             fetchPositions();
             fetchDepartments();
           }}
@@ -844,6 +828,10 @@ function AddUserDialog({
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours expiry
 
+      // Look up position and department names from IDs
+      const selectedPosition = positions.find(p => p.id === formData.position_id);
+      const selectedDepartment = departments.find(d => d.id === formData.department_id);
+
       // Create user account
       const { error: createError } = await supabase
         .from('user_accounts')
@@ -853,7 +841,9 @@ function AddUserDialog({
           user_type: formData.userType,
           role: formData.role,
           department_id: formData.department_id || null,
+          department: selectedDepartment?.name || null,
           position_id: formData.position_id || null,
+          position: selectedPosition?.name || null,
           phone: formData.phone || null,
           linked_client_id: formData.linkedClientId || null,
           is_active: true,
@@ -1192,9 +1182,11 @@ function EditUserDialog({
       }
 
       // Update user account
-      console.log('[EditUser] Updating user:', user.id, formData);
+      // Look up position and department names from IDs
+      const selectedPosition = positions.find(p => p.id === formData.position_id);
+      const selectedDepartment = departments.find(d => d.id === formData.department_id);
 
-      const { data: updateData, error: updateError, count } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from('user_accounts')
         .update({
           email: formData.email.toLowerCase(),
@@ -1202,14 +1194,14 @@ function EditUserDialog({
           user_type: formData.userType,
           role: formData.role,
           department_id: formData.department_id || null,
+          department: selectedDepartment?.name || null,
           position_id: formData.position_id || null,
+          position: selectedPosition?.name || null,
           phone: formData.phone || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id)
         .select();
-
-      console.log('[EditUser] Update result:', { updateData, updateError, count });
 
       if (updateError) throw updateError;
 

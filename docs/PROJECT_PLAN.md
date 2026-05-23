@@ -53,12 +53,12 @@ This is a **living document** that serves as the single source of truth for the 
 | **Branch** | main |
 | **Total Files** | 95 |
 | **Primary Language** | TypeScript / React |
-| **Personal Access Token** | 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 |
+| **Personal Access Token** | [User will provide at start of each session] |
 | **Token Type** | Fine-grained Personal Access Token |
 | **Token Permissions** | Contents: Read and write |
 | **Token Expiration** | Never |
 | **Token Purpose** | Push commits and manage repository for Same.new development |
-| **Created** | 2026-05-16 |
+| **Note** | User provides token at beginning of each chat for security |
 
 ### Netlify Deployment
 

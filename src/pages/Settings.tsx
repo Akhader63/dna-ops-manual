@@ -283,6 +283,9 @@ function ModulesTab() {
         )
       );
 
+      // Trigger immediate sidebar update via custom event
+      window.dispatchEvent(new CustomEvent('dna-module-changed'));
+
       toast.success(
         checked ? 'Module enabled' : 'Module disabled',
         {
@@ -576,7 +579,25 @@ function AuditLogTab() {
 /* ──────────── Main Settings Page ──────────── */
 export default function Settings() {
   const { userAccount } = useAuth();
-  const [activeTab, setActiveTab] = useState('general');
+
+  // Get initial tab from URL or default to 'general'
+  const getInitialTab = () => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    const validTabs = ['general', 'users', 'variables', 'modules', 'notifications', 'audit', 'smtp'];
+    return tabParam && validTabs.includes(tabParam) ? tabParam : 'general';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
+
+  // Update URL when tab changes
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    // Update URL without page reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', newTab);
+    window.history.replaceState({}, '', url);
+  };
 
   const isSuperAdmin = userAccount?.is_super_admin || false;
 
@@ -604,7 +625,7 @@ export default function Settings() {
       </motion.div>
 
       {/* Tabs Layout - Horizontal at Top */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         {/* Horizontal Tab Navigation */}
         <div className="border-b border-dna-alto">
           <TabsList className="h-auto w-full bg-transparent p-0 gap-0 flex justify-start">

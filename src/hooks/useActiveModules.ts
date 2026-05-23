@@ -16,45 +16,59 @@ export function useActiveModules() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchActiveModules() {
-      try {
-        setLoading(true);
-        setError(null);
+  // Define fetchActiveModules outside useEffect so it can be called manually
+  const fetchActiveModules = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const { data, error: fetchError } = await supabase
-          .from('modules')
-          .select('code, name, is_active')
-          .eq('is_active', true);
+      const { data, error: fetchError } = await supabase
+        .from('modules')
+        .select('code, name, is_active')
+        .eq('is_active', true);
 
-        if (fetchError) throw fetchError;
+      if (fetchError) throw fetchError;
 
-        const activeCodes = new Set((data || []).map((m: Module) => m.code));
-        setActiveModules(activeCodes);
-      } catch (err) {
-        console.error('[useActiveModules] Error fetching modules:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch modules');
-        // On error, assume all modules are active (fail-safe)
-        setActiveModules(new Set([
-          'dashboard',
-          'clients',
-          'manual_builder',
-          'module_library',
-          'approval_gateways',
-          'role_setup',
-          'roadmap_generator',
-          'manual_preview',
-          'project_tracker',
-          'issues_tracker',
-        ]));
-      } finally {
-        setLoading(false);
-      }
+      const activeCodes = new Set((data || []).map((m: Module) => m.code));
+      setActiveModules(activeCodes);
+    } catch (err) {
+      console.error('[useActiveModules] Error fetching modules:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch modules');
+      // On error, assume all modules are active (fail-safe)
+      setActiveModules(new Set([
+        'dashboard',
+        'clients',
+        'manual_builder',
+        'module_library',
+        'approval_gateways',
+        'role_setup',
+        'roadmap_generator',
+        'manual_preview',
+        'project_tracker',
+        'issues_tracker',
+      ]));
+    } finally {
+      setLoading(false);
     }
+  };
 
+  // Expose manual refresh function
+  const refetch = () => {
+    console.log('[useActiveModules] Manual refetch triggered');
+    fetchActiveModules();
+  };
+
+  useEffect(() => {
     fetchActiveModules();
 
-    // Subscribe to realtime changes in modules table
+    // Listen for manual refresh events (for instant UI feedback)
+    const handleModuleChange = () => {
+      console.log('[useActiveModules] Manual module change event received');
+      fetchActiveModules();
+    };
+    window.addEventListener('dna-module-changed', handleModuleChange);
+
+    // Subscribe to realtime changes in modules table (for multi-tab sync)
     // Use a unique channel name to avoid conflicts
     const channelName = `modules-changes-${Date.now()}`;
     const channel = supabase.channel(channelName);
@@ -64,7 +78,7 @@ export function useActiveModules() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'modules' },
         (payload) => {
-          console.log('[useActiveModules] Module status changed:', payload);
+          console.log('[useActiveModules] Module status changed via realtime:', payload);
           fetchActiveModules();
         }
       )
@@ -76,11 +90,12 @@ export function useActiveModules() {
 
     return () => {
       console.log('[useActiveModules] Cleaning up subscription');
+      window.removeEventListener('dna-module-changed', handleModuleChange);
       supabase.removeChannel(channel);
     };
   }, []);
 
-  return { activeModules, loading, error };
+  return { activeModules, loading, error, refetch };
 }
 
 /**

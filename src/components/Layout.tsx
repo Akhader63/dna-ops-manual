@@ -5,12 +5,17 @@ import TopHeader from './TopHeader';
 
 export default function Layout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const sidebarWidth = sidebarCollapsed ? 72 : 260;
 
   return (
     <div className="app-shell bg-dna-pampas dark:bg-dna-cream">
-      {/* Sidebar - fixed left */}
-      <div className="sidebar">
+      {/* Sidebar */}
+      <div
+        className="sidebar"
+        style={{
+          width: sidebarCollapsed ? 72 : 260,
+          transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
         <Navbar onCollapseChange={setSidebarCollapsed} />
       </div>
 
@@ -18,7 +23,7 @@ export default function Layout() {
       <div className="app-main">
         {/* Top Header */}
         <div className="app-header">
-          <TopHeader sidebarWidth={sidebarWidth} />
+          <TopHeader />
         </div>
 
         {/* Scrollable page content */}

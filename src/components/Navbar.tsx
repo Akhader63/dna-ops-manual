@@ -79,7 +79,7 @@ export default function Navbar({ onCollapseChange }: NavbarProps) {
       initial={{ x: -260 }}
       animate={{ x: 0, width: collapsed ? 72 : 260 }}
       transition={{ duration: 0.4, ease }}
-      className="fixed left-0 top-0 h-screen bg-dna-black border-r border-white/10 flex flex-col z-50 overflow-hidden"
+      className="h-screen bg-dna-black border-r border-white/10 flex flex-col z-50 overflow-hidden"
     >
       {/* Logo */}
       <div className="flex items-center h-header px-6 shrink-0">

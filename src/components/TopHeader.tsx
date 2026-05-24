@@ -55,11 +55,7 @@ function getBreadcrumbs(pathname: string): string[] {
   return crumbs;
 }
 
-interface TopHeaderProps {
-  sidebarWidth: number;
-}
-
-export default function TopHeader({ sidebarWidth }: TopHeaderProps) {
+export default function TopHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -86,8 +82,7 @@ export default function TopHeader({ sidebarWidth }: TopHeaderProps) {
 
   return (
     <header
-      className="fixed top-0 right-0 h-header bg-dna-black border-b border-white/10 z-40 flex items-center justify-between px-6"
-      style={{ left: `${sidebarWidth}px`, transition: 'left 0.3s ease' }}
+      className="h-header bg-dna-black border-b border-white/10 z-40 flex items-center justify-between px-6"
     >
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-dna-silver">

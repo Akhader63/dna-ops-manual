@@ -190,3 +190,71 @@
 [data-sonner-toast] [data-close-button] {
   opacity: 1 !important;
 }
+
+/* ===================================================================
+   GLOBAL FLEX-BASED DISPLAY PORT LAYOUT
+
+   This is a mandatory design rule for the entire application.
+   All modules and screens must follow this flex-based layout structure.
+   Content must remain visible within the viewport with controlled scrolling.
+   =================================================================== */
+
+/* App-wide flex container setup */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Main app shell - flex container */
+.app-shell {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar - fixed width, full height */
+.sidebar {
+  flex: 0 0 auto;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Main content area - flexible */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Header - fixed height */
+.app-header {
+  flex: 0 0 auto;
+}
+
+/* Page content - scrollable area */
+.page-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+
+/* Prevent horizontal overflow */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure flex children don't overflow */
+.flex-1 {
+  min-height: 0;
+  min-width: 0;
+}

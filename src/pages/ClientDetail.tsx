@@ -1,20 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
-  MapPin,
   Mail,
   Phone,
-  Globe,
-  Calendar,
   FileText,
   Users,
-  Activity,
-  Settings,
   Pencil,
-  MoreVertical,
-  Trash2,
   AlertCircle,
   Plus,
 } from 'lucide-react';
@@ -22,10 +15,9 @@ import { getClientById, deleteClient, updateClient } from '@/services/dataServic
 import type { Client } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,17 +29,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -92,7 +75,7 @@ export default function ClientDetail() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [editFormData, setEditFormData] = useState<any>({});
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -147,23 +130,31 @@ export default function ClientDetail() {
       city: client.city || '',
       country: client.country || '',
     });
-    setEditDialogOpen(true);
+    setIsEditMode(true);
   };
 
-  const handleEditSubmit = async () => {
-    if (!client) return;
+  const handleCancelEdit = () => {
+    setEditFormData({});
+    setIsEditMode(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!client || !editFormData.name?.trim()) {
+      toast.error('Client name is required');
+      return;
+    }
 
     setEditSubmitting(true);
     try {
       const updates: any = {
         name: editFormData.name.trim(),
         industry: editFormData.industry || null,
-        description: editFormData.description.trim() || null,
-        contact_name: editFormData.contact_name.trim() || null,
-        contact_email: editFormData.contact_email.trim() || null,
-        contact_phone: editFormData.contact_phone.trim() || null,
-        city: editFormData.city.trim() || null,
-        country: editFormData.country.trim() || null,
+        description: editFormData.description || null,
+        contact_name: editFormData.contact_name?.trim() || null,
+        contact_email: editFormData.contact_email?.trim() || null,
+        contact_phone: editFormData.contact_phone?.trim() || null,
+        city: editFormData.city?.trim() || null,
+        country: editFormData.country?.trim() || null,
       };
 
       await updateClient(client.id, updates);
@@ -172,7 +163,8 @@ export default function ClientDetail() {
       setClient({ ...client, ...updates });
 
       toast.success('Client updated successfully');
-      setEditDialogOpen(false);
+      setIsEditMode(false);
+      setEditFormData({});
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to update client';
       toast.error('Failed to update client', { description: msg });
@@ -312,10 +304,28 @@ export default function ClientDetail() {
             </div>
 
             {/* Right: Actions */}
-            <Button variant="outline" onClick={handleEdit}>
-              <Pencil className="size-4 mr-2" />
-              Edit Client
-            </Button>
+            {isEditMode ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={editSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={editSubmitting}
+                >
+                  {editSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={handleEdit}>
+                <Pencil className="size-4 mr-2" />
+                Edit Client
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -350,43 +360,140 @@ export default function ClientDetail() {
                   <CardHeader className="pb-1 pt-2 px-3 flex-shrink-0">
                     <CardTitle className="text-xs">Client Information</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-1.5 flex-1 overflow-hidden px-3 py-2">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                      {client.contact_name && (
-                        <>
-                          <span className="text-muted-foreground">Contact:</span>
-                          <span className="font-medium">{client.contact_name}</span>
-                        </>
-                      )}
-                      {client.contact_email && (
-                        <>
-                          <span className="text-muted-foreground">Email:</span>
-                          <a href={`mailto:${client.contact_email}`} className="text-pomegranate hover:underline truncate">
-                            {client.contact_email}
-                          </a>
-                        </>
-                      )}
-                      {client.contact_phone && (
-                        <>
-                          <span className="text-muted-foreground">Phone:</span>
-                          <a href={`tel:${client.contact_phone}`} className="text-pomegranate hover:underline">
-                            {client.contact_phone}
-                          </a>
-                        </>
-                      )}
-                      {client.city && (
-                        <>
-                          <span className="text-muted-foreground">City:</span>
-                          <span>{client.city}</span>
-                        </>
-                      )}
-                      {client.country && (
-                        <>
-                          <span className="text-muted-foreground">Country:</span>
-                          <span>{client.country}</span>
-                        </>
-                      )}
-                    </div>
+                  <CardContent className="space-y-2 flex-1 overflow-auto px-3 py-2">
+                    {!isEditMode ? (
+                      /* READ-ONLY MODE */
+                      <div className="space-y-2 text-xs">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                          <span className="text-muted-foreground">Client Name:</span>
+                          <span className="font-medium">{client.name}</span>
+
+                          <span className="text-muted-foreground">Industry:</span>
+                          <span>{client.industry || '—'}</span>
+
+                          {client.contact_name && (
+                            <>
+                              <span className="text-muted-foreground">Contact:</span>
+                              <span>{client.contact_name}</span>
+                            </>
+                          )}
+                          {client.contact_email && (
+                            <>
+                              <span className="text-muted-foreground">Email:</span>
+                              <a href={`mailto:${client.contact_email}`} className="text-pomegranate hover:underline truncate">
+                                {client.contact_email}
+                              </a>
+                            </>
+                          )}
+                          {client.contact_phone && (
+                            <>
+                              <span className="text-muted-foreground">Phone:</span>
+                              <a href={`tel:${client.contact_phone}`} className="text-pomegranate hover:underline">
+                                {client.contact_phone}
+                              </a>
+                            </>
+                          )}
+                          {client.city && (
+                            <>
+                              <span className="text-muted-foreground">City:</span>
+                              <span>{client.city}</span>
+                            </>
+                          )}
+                          {client.country && (
+                            <>
+                              <span className="text-muted-foreground">Country:</span>
+                              <span>{client.country}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      /* EDIT MODE - INLINE EDITABLE FIELDS */
+                      <div className="space-y-2">
+                        <div>
+                          <Label htmlFor="inline_name" className="text-xs">Client Name *</Label>
+                          <Input
+                            id="inline_name"
+                            value={editFormData.name || ''}
+                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                            className="h-8 text-xs mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="inline_industry" className="text-xs">Industry</Label>
+                          <Select
+                            value={editFormData.industry || ''}
+                            onValueChange={(value) => setEditFormData({ ...editFormData, industry: value })}
+                          >
+                            <SelectTrigger className="h-8 text-xs mt-1">
+                              <SelectValue placeholder="Select industry" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Construction">Construction</SelectItem>
+                              <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                              <SelectItem value="Retail">Retail</SelectItem>
+                              <SelectItem value="Healthcare">Healthcare</SelectItem>
+                              <SelectItem value="Logistics">Logistics</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="inline_contact_name" className="text-xs">Contact Name</Label>
+                          <Input
+                            id="inline_contact_name"
+                            value={editFormData.contact_name || ''}
+                            onChange={(e) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
+                            className="h-8 text-xs mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="inline_contact_email" className="text-xs">Contact Email</Label>
+                          <Input
+                            id="inline_contact_email"
+                            type="email"
+                            value={editFormData.contact_email || ''}
+                            onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
+                            className="h-8 text-xs mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="inline_contact_phone" className="text-xs">Contact Phone</Label>
+                          <div className="mt-1">
+                            <PhoneInput
+                              value={editFormData.contact_phone || ''}
+                              onChange={(value) => setEditFormData({ ...editFormData, contact_phone: value })}
+                              placeholder="Phone number"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label htmlFor="inline_city" className="text-xs">City</Label>
+                            <Input
+                              id="inline_city"
+                              value={editFormData.city || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                              className="h-8 text-xs mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="inline_country" className="text-xs">Country</Label>
+                            <Input
+                              id="inline_country"
+                              value={editFormData.country || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                              className="h-8 text-xs mt-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -638,129 +745,6 @@ export default function ClientDetail() {
           </Tabs>
         </div>
       </div>
-
-      {/* Edit Client Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Client</DialogTitle>
-            <DialogDescription>
-              Update client information
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Client Name */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit_name">Client Name *</Label>
-              <Input
-                id="edit_name"
-                value={editFormData.name || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                placeholder="Enter client name"
-              />
-            </div>
-
-            {/* Industry */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit_industry">Industry</Label>
-              <Select
-                value={editFormData.industry || ''}
-                onValueChange={(value) => setEditFormData({ ...editFormData, industry: value })}
-              >
-                <SelectTrigger id="edit_industry">
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Construction">Construction</SelectItem>
-                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                  <SelectItem value="Retail">Retail</SelectItem>
-                  <SelectItem value="Healthcare">Healthcare</SelectItem>
-                  <SelectItem value="Logistics">Logistics</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit_description">Description</Label>
-              <Textarea
-                id="edit_description"
-                value={editFormData.description || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                placeholder="Brief description of the client"
-                rows={3}
-              />
-            </div>
-
-            {/* Contact Information */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit_contact_name">Contact Name</Label>
-                <Input
-                  id="edit_contact_name"
-                  value={editFormData.contact_name || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
-                  placeholder="Contact person name"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="edit_contact_email">Contact Email</Label>
-                <Input
-                  id="edit_contact_email"
-                  type="email"
-                  value={editFormData.contact_email || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
-                  placeholder="email@example.com"
-                />
-              </div>
-            </div>
-
-            {/* Contact Phone */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit_contact_phone">Contact Phone</Label>
-              <PhoneInput
-                value={editFormData.contact_phone || ''}
-                onChange={(value) => setEditFormData({ ...editFormData, contact_phone: value })}
-                placeholder="Phone number"
-              />
-            </div>
-
-            {/* Location */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="edit_city">City</Label>
-                <Input
-                  id="edit_city"
-                  value={editFormData.city || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                  placeholder="City"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="edit_country">Country</Label>
-                <Input
-                  id="edit_country"
-                  value={editFormData.country || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
-                  placeholder="Country"
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={editSubmitting}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditSubmit} disabled={editSubmitting || !editFormData.name?.trim()}>
-              {editSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

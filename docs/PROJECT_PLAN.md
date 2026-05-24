@@ -303,6 +303,28 @@ Each use case documents:
 
 ---
 
+## Global Design Rules
+
+### Flex-Based Display Port Layout (Mandatory)
+
+All modules and screens in the DNA Ops Manual application must follow a flex-based display port layout structure. This is a permanent architectural requirement.
+
+**Requirements:**
+- Application shell uses `display: flex` with proper flex containers
+- Sidebar and header remain fixed within the layout structure
+- Main content area uses `flex: 1 1 auto` for flexible sizing
+- Page content remains visible within the viewport at all times
+- Controlled internal scrolling only where explicitly required
+- No content hidden behind sidebar or header
+- No uncontrolled horizontal scrolling
+- Layout must work on desktop, tablet, and mobile viewports
+- Dark mode must not break the flex layout structure
+
+**This rule applies to every current and future module, screen, and component.**
+All new features and pages must be designed and implemented following this flex-based approach to ensure consistent user experience and prevent content from being cut off or hidden.
+
+---
+
 ## 3. Current Development Phase
 
 ### Stage 3: Production Deployed — GitHub & Vercel Live
@@ -313,22 +335,42 @@ Each use case documents:
 **Deployed URL:** (via Vercel dashboard)
 **GitHub Repo:** https://github.com/Akhader63/dna-ops-manual
 
-This stage encompasses all production deployment activities: GitHub repository creation, Vercel project configuration, environment variable setup, and successful build/deployment. The app is now live and fully connected to the Supabase backend.
-
-#### Stage 3 Checklist
-
-| # | Task | Status |
-|---|------|--------|
-| 3.1 | Create GitHub repository (private) | ✅ Complete |
-| 3.2 | Push all 95 source files to GitHub | ✅ Complete |
-| 3.3 | Configure GitHub repository settings | ✅ Complete |
-| 3.4 | Create Vercel project and link to GitHub | ✅ Complete |
-| 3.5 | Configure Vercel build settings (Vite preset) | ✅ Complete |
-| 3.6 | Add environment variables to Vercel | ✅ Complete |
-| 3.7 | Fix TypeScript build errors for Vercel | ✅ Complete |
+| Task | Description | Status |
+|------|-------------|--------|
+| 3.1 | Create private GitHub repository | ✅ Complete |
+| 3.2 | Set up .gitignore for env and build files | ✅ Complete |
+| 3.3 | Initial commit with all project files | ✅ Complete |
+| 3.4 | Configure Vercel project | ✅ Complete |
+| 3.5 | Set environment variables in Vercel | ✅ Complete |
+| 3.6 | Connect GitHub repo to Vercel | ✅ Complete |
+| 3.7 | Configure build settings | ✅ Complete |
 | 3.8 | Successful build and deploy | ✅ Complete |
 | 3.9 | Verify app loads and connects to Supabase | ✅ Complete |
 | 3.10 | Update project documentation | ✅ Complete |
+
+---
+### Stage 3: Production Deployed — GitHub & Vercel Live
+
+**Status:** ✅ Complete
+**Started:** 2026-05-02
+**Completed:** 2026-05-04
+**Deployed URL:** (via Vercel dashboard)
+**GitHub Repo:** https://github.com/Akhader63/dna-ops-manual
+
+| Task | Description | Status |
+|------|-------------|--------|
+| 3.1 | Create private GitHub repository | ✅ Complete |
+| 3.2 | Set up .gitignore for env and build files | ✅ Complete |
+| 3.3 | Initial commit with all project files | ✅ Complete |
+| 3.4 | Configure Vercel project | ✅ Complete |
+| 3.5 | Set environment variables in Vercel | ✅ Complete |
+| 3.6 | Connect GitHub repo to Vercel | ✅ Complete |
+| 3.7 | Configure build settings | ✅ Complete |
+| 3.8 | Successful build and deploy | ✅ Complete |
+| 3.9 | Verify app loads and connects to Supabase | ✅ Complete |
+| 3.10 | Update project documentation | ✅ Complete |
+
+---
 
 ---
 

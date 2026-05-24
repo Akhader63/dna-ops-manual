@@ -74,6 +74,7 @@
 - [x] Optimized spacing, padding, and font sizes
 - [x] Made all 5 tabs compact and consistent
 - [x] **CRITICAL FIX: Global Flex Layout** - Changed h-screen to h-full in ClientDetail and RoadmapGenerator to properly work with flex container (2026-05-24)
+- [x] **CRITICAL FIX: App Shell Layout** - Removed fixed positioning from sidebar and header so content doesn't flow underneath (2026-05-24)
 
 ### Phase 8: Manual Creation & Management (NEXT)
 - [ ] Create Manual wizard

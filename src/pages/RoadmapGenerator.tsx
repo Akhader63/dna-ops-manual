@@ -749,7 +749,7 @@ export default function RoadmapGenerator() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col h-screen" style={{ backgroundColor: "#F8F7F3" }}>
+      <div className="flex flex-col h-full" style={{ backgroundColor: "#F8F7F3" }}>
         {/* ===== CANVAS TOOLBAR ===== */}
         <div
           className="flex items-center justify-between px-4 border-b bg-white shrink-0"

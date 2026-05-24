@@ -213,7 +213,7 @@ export default function ClientDetail() {
   // ─── Loading State ───
   if (loading) {
     return (
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-full bg-background">
         {/* Header Skeleton */}
         <div className="border-b border-border bg-card">
           <div className="max-w-[1600px] mx-auto px-8 py-6">
@@ -247,7 +247,7 @@ export default function ClientDetail() {
   // ─── Error State ───
   if (error || !client) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background p-8">
+      <div className="flex flex-col items-center justify-center h-full bg-background p-8">
         <div className="text-center max-w-md space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
             <AlertCircle className="size-8 text-destructive" />

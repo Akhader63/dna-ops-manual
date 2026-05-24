@@ -52,6 +52,12 @@
     --status-amber: #F59E0B;
     --status-blue: #3B82F6;
     --status-red: #EF4444;
+
+    /* App Shell Layout Variables */
+    --sidebar-expanded-width: 260px;
+    --sidebar-collapsed-width: 72px;
+    --header-height: 80px;
+    --shell-border-color: rgba(255, 255, 255, 0.1);
   }
 
   .dark {
@@ -218,11 +224,13 @@ body,
   overflow: hidden;
 }
 
-/* Sidebar - fixed width, full height */
+/* Sidebar - controlled width */
 .sidebar {
   flex: 0 0 auto;
   height: 100vh;
   overflow-y: auto;
+  min-width: var(--sidebar-collapsed-width);
+  max-width: var(--sidebar-collapsed-width);
 }
 
 /* Main content area - flexible */
@@ -235,17 +243,21 @@ body,
   overflow: hidden;
 }
 
-/* Header - fixed height */
+/* Header - controlled height */
 .app-header {
   flex: 0 0 auto;
+  height: var(--header-height);
+  min-height: var(--header-height);
+  max-height: var(--header-height);
 }
 
-/* Page content - scrollable area */
+/* Page content - scrollable with padding */
 .page-content {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   overflow: auto;
+  padding: 16px 20px 24px 20px;
 }
 
 /* Prevent horizontal overflow */
@@ -257,4 +269,36 @@ body,
 .flex-1 {
   min-height: 0;
   min-width: 0;
+}
+
+/* ===================================================================
+   GLOBAL SCROLLBAR HIDING
+   =================================================================== */
+
+/* Hide scrollbars globally while keeping scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Specific scroll containers */
+.scroll-container,
+.page-content,
+.sidebar,
+.overflow-auto {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-container::-webkit-scrollbar,
+.page-content::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  display: none;
 }

@@ -13,8 +13,6 @@ import {
   GanttChart,
   Bug,
   Settings,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { useActiveModules, isModuleActive } from '@/hooks/useActiveModules';
 
@@ -48,7 +46,7 @@ interface NavbarProps {
 export default function Navbar({ onCollapseChange }: NavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   // Fetch active modules from database
   const { activeModules, loading } = useActiveModules();
@@ -81,8 +79,21 @@ export default function Navbar({ onCollapseChange }: NavbarProps) {
       transition={{ duration: 0.4, ease }}
       className="h-screen bg-dna-black border-r border-white/10 flex flex-col z-50 overflow-hidden"
     >
-      {/* Logo */}
-      <div className="flex items-center h-header px-6 shrink-0">
+      {/* Logo - Clickable to toggle sidebar */}
+      <div
+        className="flex items-center h-header px-6 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Toggle navigation"
+        aria-expanded={!collapsed}
+      >
         {collapsed ? (
           <span className="text-xl font-bold text-dna-pomegranate">D</span>
         ) : (
@@ -128,17 +139,6 @@ export default function Navbar({ onCollapseChange }: NavbarProps) {
           })}
         </ul>
       </nav>
-
-      {/* Collapse button */}
-      <div className="shrink-0 p-3 border-t border-white/10">
-        <button
-          onClick={handleToggle}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[#C7C7C7] hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-150"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          {!collapsed && <span className="text-sm">Collapse</span>}
-        </button>
-      </div>
     </motion.aside>
   );
 }

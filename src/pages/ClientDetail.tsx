@@ -253,7 +253,7 @@ export default function ClientDetail() {
             <AlertCircle className="size-8 text-destructive" />
           </div>
           <h2 className="text-2xl font-semibold">Client Not Found</h2>
-          <p className="text-muted-foreground">{error || 'The client you\'re looking for doesn\'t exist.'}</p>
+          <p className="text-muted-foreground">{error || "The client you're looking for doesn't exist."}</p>
           <Button onClick={handleBack}>
             <ArrowLeft className="size-4 mr-2" />
             Back to Clients
@@ -265,10 +265,10 @@ export default function ClientDetail() {
 
   // ─── Main Content ───
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border bg-card flex-shrink-0">
-        <div className="max-w-[1600px] mx-auto px-6 py-3">
+        <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Back button and client info */}
             <div className="flex items-center gap-4">
@@ -331,9 +331,9 @@ export default function ClientDetail() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="max-w-[1600px] mx-auto px-6 py-3 flex-1 flex flex-col overflow-hidden w-full">
-          <Tabs defaultValue="overview" className="flex flex-col flex-1 overflow-hidden space-y-2">
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+        <div className="h-full px-6 py-3 flex flex-col overflow-hidden">
+          <Tabs defaultValue="overview" className="flex flex-col h-full overflow-hidden">
             <TabsList className="grid w-full max-w-2xl grid-cols-5 h-8">
               <TabsTrigger value="overview" className="text-xs">
                 Overview
@@ -353,8 +353,8 @@ export default function ClientDetail() {
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="flex-1 overflow-hidden mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 h-full">
+            <TabsContent value="overview" className="flex-1 overflow-hidden mt-0 h-full">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 h-full overflow-auto p-1">
                 {/* Left Column: Client Details */}
                 <Card className="lg:col-span-2 flex flex-col overflow-hidden h-full">
                   <CardHeader className="pb-1 pt-2 px-3 flex-shrink-0">
@@ -563,7 +563,7 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Manuals Tab */}
-            <TabsContent value="manuals" className="flex-1 overflow-hidden mt-0">
+            <TabsContent value="manuals" className="flex-1 overflow-auto mt-0 h-full">
               <Card className="h-full flex flex-col">
                 <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
                   <CardTitle className="text-xs">Client Manuals</CardTitle>
@@ -585,7 +585,7 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Contacts Tab */}
-            <TabsContent value="contacts" className="flex-1 overflow-hidden mt-0">
+            <TabsContent value="contacts" className="flex-1 overflow-auto mt-0 h-full">
               <Card className="h-full flex flex-col">
                 <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
                   <CardTitle className="text-xs">Client Contacts</CardTitle>
@@ -632,7 +632,7 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Activity Tab */}
-            <TabsContent value="activity" className="flex-1 overflow-hidden mt-0">
+            <TabsContent value="activity" className="flex-1 overflow-auto mt-0 h-full">
               <Card className="h-full flex flex-col">
                 <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
                   <CardTitle className="text-xs">Activity Timeline</CardTitle>
@@ -677,7 +677,7 @@ export default function ClientDetail() {
             </TabsContent>
 
             {/* Settings Tab */}
-            <TabsContent value="settings" className="flex-1 overflow-hidden mt-0">
+            <TabsContent value="settings" className="flex-1 overflow-auto mt-0 h-full">
               <Card className="h-full flex flex-col">
                 <CardHeader className="pb-2 pt-2 px-3 flex-shrink-0">
                   <CardTitle className="text-xs">Client Settings</CardTitle>

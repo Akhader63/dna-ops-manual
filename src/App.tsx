@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -22,7 +22,16 @@ import ManualPreview from './pages/ManualPreview';
 import SharedManual from './pages/SharedManual';
 import ProjectTracker from './pages/ProjectTracker';
 import IssuesTracker from './pages/IssuesTracker';
-import Settings from './pages/Settings';
+import SettingsIndex from './pages/SettingsIndex';
+import SettingsGeneral from './pages/settings/SettingsGeneral';
+import SettingsUsers from './pages/settings/SettingsUsers';
+import SettingsVariables from './pages/settings/SettingsVariables';
+import SettingsModules from './pages/settings/SettingsModules';
+import SettingsNotifications from './pages/settings/SettingsNotifications';
+import SettingsAuditLog from './pages/settings/SettingsAuditLog';
+import SettingsSMTP from './pages/settings/SettingsSMTP';
+import SettingsModuleLibrary from './pages/settings/SettingsModuleLibrary';
+import SettingsApprovalGateways from './pages/settings/SettingsApprovalGateways';
 import Profile from './pages/Profile';
 import DebugAuth from './pages/DebugAuth';
 import EnvCheck from './pages/EnvCheck';
@@ -50,16 +59,30 @@ export default function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/clients/:id" element={<ClientDetail />} />
             <Route path="/manual-builder" element={<ManualBuilder />} />
-            <Route path="/module-library" element={<ModuleLibrary />} />
             <Route path="/transactions/:id" element={<TransactionDetail />} />
             <Route path="/use-cases/:id" element={<UseCaseDetail />} />
-            <Route path="/approval-gateways" element={<ApprovalGateways />} />
             <Route path="/role-setup" element={<RoleSetup />} />
             <Route path="/roadmap-generator" element={<RoadmapGenerator />} />
             <Route path="/manual-preview" element={<ManualPreview />} />
             <Route path="/project-tracker" element={<ProjectTracker />} />
             <Route path="/issues-tracker" element={<IssuesTracker />} />
-            <Route path="/settings" element={<Settings />} />
+
+            {/* Settings Routes */}
+            <Route path="/settings" element={<SettingsIndex />} />
+            <Route path="/settings/general" element={<SettingsGeneral />} />
+            <Route path="/settings/users" element={<SettingsUsers />} />
+            <Route path="/settings/variables" element={<SettingsVariables />} />
+            <Route path="/settings/modules" element={<SettingsModules />} />
+            <Route path="/settings/notifications" element={<SettingsNotifications />} />
+            <Route path="/settings/audit-log" element={<SettingsAuditLog />} />
+            <Route path="/settings/smtp" element={<SettingsSMTP />} />
+            <Route path="/settings/module-library" element={<SettingsModuleLibrary />} />
+            <Route path="/settings/approval-gateways" element={<SettingsApprovalGateways />} />
+
+            {/* Redirects for old routes */}
+            <Route path="/module-library" element={<Navigate to="/settings/module-library" replace />} />
+            <Route path="/approval-gateways" element={<Navigate to="/settings/approval-gateways" replace />} />
+
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>

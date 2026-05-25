@@ -27,8 +27,6 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/', moduleCode: 'dashboard' },
   { label: 'Clients', icon: Building2, path: '/clients', moduleCode: 'clients' },
   { label: 'Manual Builder', icon: FilePlus, path: '/manual-builder', moduleCode: 'manual_builder' },
-  { label: 'Module Library', icon: Library, path: '/module-library', moduleCode: 'module_library' },
-  { label: 'Approval Gateways', icon: ShieldCheck, path: '/approval-gateways', moduleCode: 'approval_gateways' },
   { label: 'Role Setup', icon: Users, path: '/role-setup', moduleCode: 'role_setup' },
   { label: 'Roadmap Generator', icon: GitBranch, path: '/roadmap-generator', moduleCode: 'roadmap_generator' },
   { label: 'Manual Preview', icon: Eye, path: '/manual-preview', moduleCode: 'manual_preview' },

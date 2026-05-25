@@ -323,6 +323,63 @@ All modules and screens in the DNA Ops Manual application must follow a flex-bas
 **This rule applies to every current and future module, screen, and component.**
 All new features and pages must be designed and implemented following this flex-based approach to ensure consistent user experience and prevent content from being cut off or hidden.
 
+### Global Screen Design Language (Mandatory)
+
+Every module and screen must follow the same navigation and action placement pattern to build user muscle memory across the application.
+
+**Required Screen Pattern:**
+
+1. **Title** - Top-left, large (text-3xl), semibold, tracking-tight
+2. **Description** - Below title, small text (text-sm), humanized explanation of purpose
+3. **Search Bar** - Directly below description (when applicable)
+4. **Action Buttons** - Top-right of content component (not mixed with search)
+5. **Main Content** - Below the above elements
+
+**This pattern applies to:**
+- Dashboard
+- Clients
+- Manual Builder
+- Settings (and all sub-pages)
+- All future modules and screens
+
+**Action Button Placement Rule:**
+All screen-level action buttons (Add User, Add Client, New Manual, etc.) must be positioned at the top-right of the content component. Never randomly placed or mixed with search bars.
+
+### Settings Module Structure
+
+Settings is designed as an ERP-style card-based setup center with three categories:
+
+**Organization Category:**
+- General - Company details, branding, workspace information
+- Users - User account management
+
+**Configuration Category:**
+- Variables - Reusable dropdown values (positions, departments)
+- Modules - Activate/deactivate app modules
+- Module Library - ERP module references, transactions, manual structure
+- Approval Gateways - Approval paths, workflow gates, validation checkpoints
+
+**Administration Category:**
+- Notifications - System alerts configuration
+- Audit Log - System activity and user actions
+- SMTP - Email configuration (Super Admin only)
+
+**Important:** Module Library and Approval Gateways are no longer standalone modules in the main navigation. They are configuration screens accessible through Settings → Configuration.
+
+**Routes:**
+- `/settings` - Card-based landing page
+- `/settings/general`
+- `/settings/users`
+- `/settings/variables`
+- `/settings/modules`
+- `/settings/module-library`
+- `/settings/approval-gateways`
+- `/settings/notifications`
+- `/settings/audit-log`
+- `/settings/smtp`
+
+Old routes `/module-library` and `/approval-gateways` redirect to their new Settings locations.
+
 ---
 
 ## 3. Current Development Phase

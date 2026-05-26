@@ -67,7 +67,7 @@ export function PhoneInput({
   };
 
   return (
-    <div className={cn('flex gap-2', className)}>
+    <div className={cn('grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-2 w-full', className)}>
       {/* Country Code Selector */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -76,35 +76,49 @@ export function PhoneInput({
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className="w-[140px] justify-between"
+            className="w-full justify-between min-w-0"
           >
             <span className="flex items-center gap-2 truncate">
-              <span className="text-lg">{selectedCountry.flag}</span>
-              <span className="text-sm">{selectedCountry.dialCode}</span>
+              <span className="text-lg leading-none">{selectedCountry.flag}</span>
+              <span className="text-sm font-medium">{selectedCountry.dialCode}</span>
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[320px] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Search country..." className="h-12 border-b" />
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup className="max-h-[280px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <PopoverContent className="w-[360px] p-0" align="start">
+          <Command className="rounded-lg">
+            {/* Search Field - Clean styling */}
+            <div className="px-3 py-2 border-b border-dna-alto">
+              <CommandInput
+                placeholder="Search country..."
+                className="h-9 border-0 focus:ring-0 focus:outline-none px-0"
+              />
+            </div>
+
+            <CommandEmpty className="py-6 text-center text-sm text-dna-tundora">
+              No country found.
+            </CommandEmpty>
+
+            {/* Scrollable Country List */}
+            <CommandGroup className="max-h-[280px] overflow-y-auto p-1">
               {countries.map((country) => (
                 <CommandItem
                   key={country.code}
                   value={`${country.name} ${country.dialCode}`}
                   onSelect={() => handleCountryChange(country)}
+                  className="grid grid-cols-[32px_1fr_auto] gap-3 items-center min-h-[42px] px-3 py-2 cursor-pointer rounded-md hover:bg-dna-alto/50 aria-selected:bg-dna-alto"
                 >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      selectedCountry.code === country.code ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  <span className="text-lg mr-2">{country.flag}</span>
-                  <span className="flex-1">{country.name}</span>
-                  <span className="text-sm text-muted-foreground">{country.dialCode}</span>
+                  <span className="text-lg leading-none">{country.flag}</span>
+                  <span className="text-sm truncate">{country.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-dna-tundora">{country.dialCode}</span>
+                    <Check
+                      className={cn(
+                        'h-4 w-4 text-dna-pomegranate',
+                        selectedCountry.code === country.code ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -119,7 +133,7 @@ export function PhoneInput({
         onChange={handlePhoneNumberChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="flex-1"
+        className="w-full min-w-0"
       />
     </div>
   );

@@ -5,8 +5,6 @@ import {
   LayoutDashboard,
   Building2,
   FilePlus,
-  Library,
-  ShieldCheck,
   Users,
   GitBranch,
   Eye,

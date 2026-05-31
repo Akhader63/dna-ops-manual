@@ -307,9 +307,6 @@ export default function ClientDetail() {
       name: client.name,
       industry: client.industry || '',
       description: client.description || '',
-      contact_name: client.contact_name || '',
-      contact_email: client.contact_email || '',
-      contact_phone: client.contact_phone || '',
       city: client.city || '',
       country: client.country || '',
     });
@@ -333,9 +330,6 @@ export default function ClientDetail() {
         name: editFormData.name.trim(),
         industry: editFormData.industry || null,
         description: editFormData.description || null,
-        contact_name: editFormData.contact_name?.trim() || null,
-        contact_email: editFormData.contact_email?.trim() || null,
-        contact_phone: editFormData.contact_phone?.trim() || null,
         city: editFormData.city?.trim() || null,
         country: editFormData.country?.trim() || null,
       };
@@ -554,28 +548,6 @@ export default function ClientDetail() {
                           <span className="text-muted-foreground">Industry:</span>
                           <span>{client.industry || '—'}</span>
 
-                          {client.contact_name && (
-                            <>
-                              <span className="text-muted-foreground">Contact:</span>
-                              <span>{client.contact_name}</span>
-                            </>
-                          )}
-                          {client.contact_email && (
-                            <>
-                              <span className="text-muted-foreground">Email:</span>
-                              <a href={`mailto:${client.contact_email}`} className="text-pomegranate hover:underline truncate">
-                                {client.contact_email}
-                              </a>
-                            </>
-                          )}
-                          {client.contact_phone && (
-                            <>
-                              <span className="text-muted-foreground">Phone:</span>
-                              <a href={`tel:${client.contact_phone}`} className="text-pomegranate hover:underline">
-                                {client.contact_phone}
-                              </a>
-                            </>
-                          )}
                           {client.city && (
                             <>
                               <span className="text-muted-foreground">City:</span>
@@ -620,38 +592,6 @@ export default function ClientDetail() {
                               <SelectItem value="Logistics">Logistics</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="inline_contact_name" className="text-xs">Contact Name</Label>
-                          <Input
-                            id="inline_contact_name"
-                            value={editFormData.contact_name || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
-                            className="h-8 text-xs mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="inline_contact_email" className="text-xs">Contact Email</Label>
-                          <Input
-                            id="inline_contact_email"
-                            type="email"
-                            value={editFormData.contact_email || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, contact_email: e.target.value })}
-                            className="h-8 text-xs mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="inline_contact_phone" className="text-xs">Contact Phone</Label>
-                          <div className="mt-1">
-                            <PhoneInput
-                              value={editFormData.contact_phone || ''}
-                              onChange={(value) => setEditFormData({ ...editFormData, contact_phone: value })}
-                              placeholder="Phone number"
-                            />
-                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">

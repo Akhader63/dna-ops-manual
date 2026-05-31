@@ -12,8 +12,6 @@ import {
   Plus,
   Trash2,
   Edit,
-  ToggleLeft,
-  ToggleRight,
   X,
   Check,
 } from 'lucide-react';
@@ -92,16 +90,28 @@ export default function ClientDetail() {
   const [contactFormData, setContactFormData] = useState({
     full_name: '',
     email: '',
-    mobile_number: ''
+    mobile_number: '',
+    is_active: true
   });
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContactFormData, setEditContactFormData] = useState({
     full_name: '',
     email: '',
-    mobile_number: ''
+    mobile_number: '',
+    is_active: true
   });
   const [deleteContactId, setDeleteContactId] = useState<string | null>(null);
+
+  // Primary contact edit state
+  const [editingPrimaryContact, setEditingPrimaryContact] = useState(false);
+  const [primaryContactFormData, setPrimaryContactFormData] = useState({
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    contact_is_active: true
+  });
+  const [primaryContactSubmitting, setPrimaryContactSubmitting] = useState(false);
 
   useEffect(() => {
     loadClient();
@@ -173,7 +183,8 @@ export default function ClientDetail() {
     setContactFormData({
       full_name: '',
       email: '',
-      mobile_number: ''
+      mobile_number: '',
+      is_active: true
     });
   };
 
@@ -215,9 +226,11 @@ export default function ClientDetail() {
     setEditContactFormData({
       full_name: contact.full_name,
       email: contact.email || '',
-      mobile_number: contact.mobile_number || ''
+      mobile_number: contact.mobile_number || '',
+      is_active: contact.is_active
     });
     setShowAddContact(false);
+    setEditingPrimaryContact(false);
   };
 
   const handleCancelEditContact = () => {
@@ -225,7 +238,8 @@ export default function ClientDetail() {
     setEditContactFormData({
       full_name: '',
       email: '',
-      mobile_number: ''
+      mobile_number: '',
+      is_active: true
     });
   };
 
@@ -243,7 +257,8 @@ export default function ClientDetail() {
         .update({
           full_name: editContactFormData.full_name.trim(),
           email: editContactFormData.email.trim() || null,
-          mobile_number: editContactFormData.mobile_number.trim() || null
+          mobile_number: editContactFormData.mobile_number.trim() || null,
+          is_active: editContactFormData.is_active
         })
         .eq('id', editingContactId);
 
@@ -257,23 +272,6 @@ export default function ClientDetail() {
       toast.error('Failed to update contact');
     } finally {
       setContactSubmitting(false);
-    }
-  };
-
-  const handleToggleActive = async (contactId: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('client_contacts')
-        .update({ is_active: !currentStatus })
-        .eq('id', contactId);
-
-      if (error) throw error;
-
-      toast.success(`Contact ${!currentStatus ? 'activated' : 'deactivated'}`);
-      await loadContacts();
-    } catch (err) {
-      console.error('Error toggling contact status:', err);
-      toast.error('Failed to update contact status');
     }
   };
 
@@ -291,9 +289,60 @@ export default function ClientDetail() {
       toast.success('Contact deleted successfully');
       await loadContacts();
       setDeleteContactId(null);
+      handleCancelEditContact();
     } catch (err) {
       console.error('Error deleting contact:', err);
       toast.error('Failed to delete contact');
+    }
+  };
+
+  // Primary contact edit handlers
+  const handleEditPrimaryContact = () => {
+    if (!client) return;
+    setPrimaryContactFormData({
+      contact_name: client.contact_name || '',
+      contact_email: client.contact_email || '',
+      contact_phone: client.contact_phone || '',
+      contact_is_active: client.contact_is_active ?? true
+    });
+    setEditingPrimaryContact(true);
+    setShowAddContact(false);
+    setEditingContactId(null);
+  };
+
+  const handleCancelEditPrimaryContact = () => {
+    setEditingPrimaryContact(false);
+    setPrimaryContactFormData({
+      contact_name: '',
+      contact_email: '',
+      contact_phone: '',
+      contact_is_active: true
+    });
+  };
+
+  const handleSavePrimaryContact = async () => {
+    if (!client) return;
+    if (!primaryContactFormData.contact_name.trim()) {
+      toast.error('Contact name is required');
+      return;
+    }
+    try {
+      setPrimaryContactSubmitting(true);
+      const updates = {
+        contact_name: primaryContactFormData.contact_name.trim() || null,
+        contact_email: primaryContactFormData.contact_email.trim() || null,
+        contact_phone: primaryContactFormData.contact_phone.trim() || null,
+        contact_is_active: primaryContactFormData.contact_is_active
+      };
+      await updateClient(client.id, updates);
+      setClient({ ...client, ...updates });
+      toast.success('Primary contact updated successfully');
+      handleCancelEditPrimaryContact();
+    } catch (err) {
+      console.error('Error updating primary contact:', err);
+      toast.error('Failed to update primary contact');
+    } finally {
+      setPrimaryContactSubmitting(false);
     }
   };
 
@@ -717,31 +766,122 @@ export default function ClientDetail() {
                   <div className="space-y-2">
                     {/* Primary Contact */}
                     {client.contact_name && (
-                      <div className="flex items-start gap-4 p-4 border border-border rounded-lg">
-                        <div className="w-10 h-10 rounded-full bg-pomegranate/10 flex items-center justify-center shrink-0">
-                          <Users className="size-5 text-pomegranate" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{client.contact_name}</h4>
-                            <Badge variant="outline" className="text-xs">Primary</Badge>
+                      editingPrimaryContact ? (
+                        // Primary Contact Edit Form
+                        <div className="p-4 border border-dashed border-border rounded-lg space-y-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium text-sm">Edit Primary Contact</h4>
+                            <Badge variant="outline" className="text-xs bg-pomegranate/10 text-pomegranate border-pomegranate/20">Primary</Badge>
                           </div>
-                          <div className="space-y-1">
-                            {client.contact_email && (
-                              <p className="text-sm text-muted-foreground">
-                                <Mail className="size-3 inline mr-1" />
-                                {client.contact_email}
-                              </p>
-                            )}
-                            {client.contact_phone && (
-                              <p className="text-sm text-muted-foreground">
-                                <Phone className="size-3 inline mr-1" />
-                                {client.contact_phone}
-                              </p>
-                            )}
+
+                          <div className="space-y-2">
+                            <Label htmlFor="primary-name" className="text-xs">Contact Full Name *</Label>
+                            <Input
+                              id="primary-name"
+                              value={primaryContactFormData.contact_name}
+                              onChange={(e) => setPrimaryContactFormData({ ...primaryContactFormData, contact_name: e.target.value })}
+                              placeholder="Enter full name"
+                              className="h-9"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="primary-email" className="text-xs">Contact Email</Label>
+                            <Input
+                              id="primary-email"
+                              type="email"
+                              value={primaryContactFormData.contact_email}
+                              onChange={(e) => setPrimaryContactFormData({ ...primaryContactFormData, contact_email: e.target.value })}
+                              placeholder="email@example.com"
+                              className="h-9"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="primary-mobile" className="text-xs">Contact Phone</Label>
+                            <PhoneInput
+                              value={primaryContactFormData.contact_phone}
+                              onChange={(value) => setPrimaryContactFormData({ ...primaryContactFormData, contact_phone: value })}
+                              placeholder="Phone number"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-xs">Contact Status</Label>
+                            <div className="flex items-center gap-3 mt-1">
+                              <Switch
+                                checked={primaryContactFormData.contact_is_active}
+                                onCheckedChange={(checked) => setPrimaryContactFormData({ ...primaryContactFormData, contact_is_active: checked })}
+                              />
+                              <span className="text-sm">
+                                {primaryContactFormData.contact_is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              onClick={handleSavePrimaryContact}
+                              disabled={primaryContactSubmitting}
+                              size="sm"
+                              className="flex-1"
+                            >
+                              {primaryContactSubmitting ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                            <Button
+                              onClick={handleCancelEditPrimaryContact}
+                              variant="outline"
+                              size="sm"
+                              disabled={primaryContactSubmitting}
+                            >
+                              Cancel
+                            </Button>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        // Primary Contact Card
+                        <div className={`flex items-start gap-4 p-4 border border-border rounded-lg ${!client.contact_is_active ? 'opacity-60' : ''}`}>
+                          <div className="w-10 h-10 rounded-full bg-pomegranate/10 flex items-center justify-center shrink-0">
+                            <Users className="size-5 text-pomegranate" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h4 className="font-medium">{client.contact_name}</h4>
+                              <Badge variant="outline" className="text-xs bg-pomegranate/10 text-pomegranate border-pomegranate/20">Primary</Badge>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${client.contact_is_active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
+                              >
+                                {client.contact_is_active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                            <div className="space-y-1">
+                              {client.contact_email && (
+                                <p className="text-sm text-muted-foreground">
+                                  <Mail className="size-3 inline mr-1" />
+                                  {client.contact_email}
+                                </p>
+                              )}
+                              {client.contact_phone && (
+                                <p className="text-sm text-muted-foreground">
+                                  <Phone className="size-3 inline mr-1" />
+                                  {client.contact_phone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              onClick={handleEditPrimaryContact}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2"
+                            >
+                              <Edit className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
                     )}
 
                     {/* Additional Contacts */}
@@ -783,6 +923,19 @@ export default function ClientDetail() {
                             />
                           </div>
 
+                          <div className="space-y-2">
+                            <Label className="text-xs">Contact Status</Label>
+                            <div className="flex items-center gap-3 mt-1">
+                              <Switch
+                                checked={editContactFormData.is_active}
+                                onCheckedChange={(checked) => setEditContactFormData({ ...editContactFormData, is_active: checked })}
+                              />
+                              <span className="text-sm">
+                                {editContactFormData.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+
                           <div className="flex gap-2 pt-2">
                             <Button
                               onClick={handleSaveEditContact}
@@ -811,9 +964,12 @@ export default function ClientDetail() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <h4 className="font-medium">{contact.full_name}</h4>
-                              {!contact.is_active && (
-                                <Badge variant="outline" className="text-xs bg-gray-100">Inactive</Badge>
-                              )}
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${contact.is_active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}
+                              >
+                                {contact.is_active ? 'Active' : 'Inactive'}
+                              </Badge>
                             </div>
                             <div className="space-y-1">
                               {contact.email && (
@@ -838,18 +994,6 @@ export default function ClientDetail() {
                               className="h-8 px-2"
                             >
                               <Edit className="size-4" />
-                            </Button>
-                            <Button
-                              onClick={() => handleToggleActive(contact.id, contact.is_active)}
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2"
-                            >
-                              {contact.is_active ? (
-                                <ToggleRight className="size-4 text-green-600" />
-                              ) : (
-                                <ToggleLeft className="size-4 text-gray-400" />
-                              )}
                             </Button>
                             <Button
                               onClick={() => setDeleteContactId(contact.id)}
@@ -923,7 +1067,7 @@ export default function ClientDetail() {
                     )}
 
                     {/* Add More Contacts Button */}
-                    {!showAddContact && !editingContactId && (
+                    {!showAddContact && !editingContactId && !editingPrimaryContact && (
                       <Button variant="outline" className="w-full" onClick={handleAddContact}>
                         <Plus className="size-4 mr-2" />
                         Add Contact

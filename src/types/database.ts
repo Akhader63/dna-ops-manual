@@ -153,6 +153,17 @@ export interface Client {
   deleted_at: string | null;
 }
 
+export interface ClientContact {
+  id: string;
+  client_id: string;
+  full_name: string;
+  email: string | null;
+  mobile_number: string | null;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UserAccount {
   id: string;
   auth_user_id: string | null;

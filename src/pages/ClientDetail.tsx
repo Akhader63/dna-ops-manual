@@ -12,7 +12,8 @@ import {
   Plus,
 } from 'lucide-react';
 import { getClientById, deleteClient, updateClient } from '@/services/dataService';
-import type { Client } from '@/types/database';
+import type { Client, ClientContact } from '@/types/database';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,8 +80,19 @@ export default function ClientDetail() {
   const [editFormData, setEditFormData] = useState<any>({});
   const [editSubmitting, setEditSubmitting] = useState(false);
 
+  // Contact management state
+  const [contacts, setContacts] = useState<ClientContact[]>([]);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    full_name: '',
+    email: '',
+    mobile_number: ''
+  });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+
   useEffect(() => {
     loadClient();
+    // eslint-disable-next-line
   }, [id]);
 
   // Set document title for breadcrumb
@@ -105,12 +117,82 @@ export default function ClientDetail() {
       setError(null);
       const data = await getClientById(id);
       setClient(data);
+      // Load contacts after loading client
+      await loadContacts();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load client';
       setError(msg);
       toast.error('Error', { description: msg });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadContacts = async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('client_contacts')
+        .select('*')
+        .eq('client_id', id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setContacts(data || []);
+    } catch (err) {
+      console.error('Error loading contacts:', err);
+      toast.error('Failed to load contacts');
+    }
+  };
+
+  const handleAddContact = () => {
+    setShowAddContact(true);
+    setContactFormData({
+      full_name: '',
+      email: '',
+      mobile_number: ''
+    });
+  };
+
+  const handleCancelAddContact = () => {
+    setShowAddContact(false);
+    setContactFormData({
+      full_name: '',
+      email: '',
+      mobile_number: ''
+    });
+  };
+
+  const handleSaveContact = async () => {
+    if (!id) return;
+    if (!contactFormData.full_name.trim()) {
+      toast.error('Contact name is required');
+      return;
+    }
+
+    try {
+      setContactSubmitting(true);
+      const { error } = await supabase
+        .from('client_contacts')
+        .insert({
+          client_id: id,
+          full_name: contactFormData.full_name.trim(),
+          email: contactFormData.email.trim() || null,
+          mobile_number: contactFormData.mobile_number.trim() || null,
+          is_primary: false
+        });
+
+      if (error) throw error;
+
+      toast.success('Contact added successfully');
+      await loadContacts();
+      handleCancelAddContact();
+    } catch (err) {
+      console.error('Error saving contact:', err);
+      toast.error('Failed to add contact');
+    } finally {
+      setContactSubmitting(false);
     }
   };
 
@@ -621,11 +703,99 @@ export default function ClientDetail() {
                       </div>
                     )}
 
+                    {/* Additional Contacts */}
+                    {contacts.map((contact) => (
+                      <div key={contact.id} className="flex items-start gap-4 p-4 border border-border rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                          <Users className="size-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium">{contact.full_name}</h4>
+                          </div>
+                          <div className="space-y-1">
+                            {contact.email && (
+                              <p className="text-sm text-muted-foreground">
+                                <Mail className="size-3 inline mr-1" />
+                                {contact.email}
+                              </p>
+                            )}
+                            {contact.mobile_number && (
+                              <p className="text-sm text-muted-foreground">
+                                <Phone className="size-3 inline mr-1" />
+                                {contact.mobile_number}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add Contact Form */}
+                    {showAddContact && (
+                      <div className="p-4 border border-dashed border-border rounded-lg space-y-3">
+                        <h4 className="font-medium text-sm mb-3">Add New Contact</h4>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="contact-name" className="text-xs">Contact Full Name *</Label>
+                          <Input
+                            id="contact-name"
+                            value={contactFormData.full_name}
+                            onChange={(e) => setContactFormData({ ...contactFormData, full_name: e.target.value })}
+                            placeholder="Enter full name"
+                            className="h-9"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="contact-email" className="text-xs">Contact Email</Label>
+                          <Input
+                            id="contact-email"
+                            type="email"
+                            value={contactFormData.email}
+                            onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
+                            placeholder="email@example.com"
+                            className="h-9"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="contact-mobile" className="text-xs">Contact Mobile Number</Label>
+                          <PhoneInput
+                            value={contactFormData.mobile_number}
+                            onChange={(value) => setContactFormData({ ...contactFormData, mobile_number: value })}
+                            placeholder="Phone number"
+                          />
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            onClick={handleSaveContact}
+                            disabled={contactSubmitting}
+                            size="sm"
+                            className="flex-1"
+                          >
+                            {contactSubmitting ? 'Saving...' : 'Save Contact'}
+                          </Button>
+                          <Button
+                            onClick={handleCancelAddContact}
+                            variant="outline"
+                            size="sm"
+                            disabled={contactSubmitting}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Add More Contacts Button */}
-                    <Button variant="outline" className="w-full">
-                      <Plus className="size-4 mr-2" />
-                      Add Contact
-                    </Button>
+                    {!showAddContact && (
+                      <Button variant="outline" className="w-full" onClick={handleAddContact}>
+                        <Plus className="size-4 mr-2" />
+                        Add Contact
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

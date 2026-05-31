@@ -10,6 +10,12 @@ import {
   Pencil,
   AlertCircle,
   Plus,
+  Trash2,
+  Edit,
+  ToggleLeft,
+  ToggleRight,
+  X,
+  Check,
 } from 'lucide-react';
 import { getClientById, deleteClient, updateClient } from '@/services/dataService';
 import type { Client, ClientContact } from '@/types/database';
@@ -89,6 +95,13 @@ export default function ClientDetail() {
     mobile_number: ''
   });
   const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editContactFormData, setEditContactFormData] = useState({
+    full_name: '',
+    email: '',
+    mobile_number: ''
+  });
+  const [deleteContactId, setDeleteContactId] = useState<string | null>(null);
 
   useEffect(() => {
     loadClient();
@@ -180,7 +193,8 @@ export default function ClientDetail() {
           full_name: contactFormData.full_name.trim(),
           email: contactFormData.email.trim() || null,
           mobile_number: contactFormData.mobile_number.trim() || null,
-          is_primary: false
+          is_primary: false,
+          is_active: true
         });
 
       if (error) throw error;
@@ -193,6 +207,93 @@ export default function ClientDetail() {
       toast.error('Failed to add contact');
     } finally {
       setContactSubmitting(false);
+    }
+  };
+
+  const handleEditContact = (contact: ClientContact) => {
+    setEditingContactId(contact.id);
+    setEditContactFormData({
+      full_name: contact.full_name,
+      email: contact.email || '',
+      mobile_number: contact.mobile_number || ''
+    });
+    setShowAddContact(false);
+  };
+
+  const handleCancelEditContact = () => {
+    setEditingContactId(null);
+    setEditContactFormData({
+      full_name: '',
+      email: '',
+      mobile_number: ''
+    });
+  };
+
+  const handleSaveEditContact = async () => {
+    if (!editingContactId) return;
+    if (!editContactFormData.full_name.trim()) {
+      toast.error('Contact name is required');
+      return;
+    }
+
+    try {
+      setContactSubmitting(true);
+      const { error } = await supabase
+        .from('client_contacts')
+        .update({
+          full_name: editContactFormData.full_name.trim(),
+          email: editContactFormData.email.trim() || null,
+          mobile_number: editContactFormData.mobile_number.trim() || null
+        })
+        .eq('id', editingContactId);
+
+      if (error) throw error;
+
+      toast.success('Contact updated successfully');
+      await loadContacts();
+      handleCancelEditContact();
+    } catch (err) {
+      console.error('Error updating contact:', err);
+      toast.error('Failed to update contact');
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
+  const handleToggleActive = async (contactId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('client_contacts')
+        .update({ is_active: !currentStatus })
+        .eq('id', contactId);
+
+      if (error) throw error;
+
+      toast.success(`Contact ${!currentStatus ? 'activated' : 'deactivated'}`);
+      await loadContacts();
+    } catch (err) {
+      console.error('Error toggling contact status:', err);
+      toast.error('Failed to update contact status');
+    }
+  };
+
+  const handleDeleteContact = async (contactId: string) => {
+    try {
+      // TODO: Check if contact has any transactions
+      // For now, we'll allow deletion
+      const { error } = await supabase
+        .from('client_contacts')
+        .delete()
+        .eq('id', contactId);
+
+      if (error) throw error;
+
+      toast.success('Contact deleted successfully');
+      await loadContacts();
+      setDeleteContactId(null);
+    } catch (err) {
+      console.error('Error deleting contact:', err);
+      toast.error('Failed to delete contact');
     }
   };
 
@@ -705,30 +806,122 @@ export default function ClientDetail() {
 
                     {/* Additional Contacts */}
                     {contacts.map((contact) => (
-                      <div key={contact.id} className="flex items-start gap-4 p-4 border border-border rounded-lg">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                          <Users className="size-5 text-blue-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{contact.full_name}</h4>
+                      editingContactId === contact.id ? (
+                        // Edit Form
+                        <div key={contact.id} className="p-4 border border-dashed border-border rounded-lg space-y-3">
+                          <h4 className="font-medium text-sm mb-3">Edit Contact</h4>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-name-${contact.id}`} className="text-xs">Contact Full Name *</Label>
+                            <Input
+                              id={`edit-name-${contact.id}`}
+                              value={editContactFormData.full_name}
+                              onChange={(e) => setEditContactFormData({ ...editContactFormData, full_name: e.target.value })}
+                              placeholder="Enter full name"
+                              className="h-9"
+                            />
                           </div>
-                          <div className="space-y-1">
-                            {contact.email && (
-                              <p className="text-sm text-muted-foreground">
-                                <Mail className="size-3 inline mr-1" />
-                                {contact.email}
-                              </p>
-                            )}
-                            {contact.mobile_number && (
-                              <p className="text-sm text-muted-foreground">
-                                <Phone className="size-3 inline mr-1" />
-                                {contact.mobile_number}
-                              </p>
-                            )}
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-email-${contact.id}`} className="text-xs">Contact Email</Label>
+                            <Input
+                              id={`edit-email-${contact.id}`}
+                              type="email"
+                              value={editContactFormData.email}
+                              onChange={(e) => setEditContactFormData({ ...editContactFormData, email: e.target.value })}
+                              placeholder="email@example.com"
+                              className="h-9"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-mobile-${contact.id}`} className="text-xs">Contact Mobile Number</Label>
+                            <PhoneInput
+                              value={editContactFormData.mobile_number}
+                              onChange={(value) => setEditContactFormData({ ...editContactFormData, mobile_number: value })}
+                              placeholder="Phone number"
+                            />
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              onClick={handleSaveEditContact}
+                              disabled={contactSubmitting}
+                              size="sm"
+                              className="flex-1"
+                            >
+                              {contactSubmitting ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                            <Button
+                              onClick={handleCancelEditContact}
+                              variant="outline"
+                              size="sm"
+                              disabled={contactSubmitting}
+                            >
+                              Cancel
+                            </Button>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        // Contact Card
+                        <div key={contact.id} className={`flex items-start gap-4 p-4 border border-border rounded-lg ${!contact.is_active ? 'opacity-60' : ''}`}>
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <Users className="size-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h4 className="font-medium">{contact.full_name}</h4>
+                              {!contact.is_active && (
+                                <Badge variant="outline" className="text-xs bg-gray-100">Inactive</Badge>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              {contact.email && (
+                                <p className="text-sm text-muted-foreground">
+                                  <Mail className="size-3 inline mr-1" />
+                                  {contact.email}
+                                </p>
+                              )}
+                              {contact.mobile_number && (
+                                <p className="text-sm text-muted-foreground">
+                                  <Phone className="size-3 inline mr-1" />
+                                  {contact.mobile_number}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              onClick={() => handleEditContact(contact)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2"
+                            >
+                              <Edit className="size-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleToggleActive(contact.id, contact.is_active)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2"
+                            >
+                              {contact.is_active ? (
+                                <ToggleRight className="size-4 text-green-600" />
+                              ) : (
+                                <ToggleLeft className="size-4 text-gray-400" />
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => setDeleteContactId(contact.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
                     ))}
 
                     {/* Add Contact Form */}
@@ -790,7 +983,7 @@ export default function ClientDetail() {
                     )}
 
                     {/* Add More Contacts Button */}
-                    {!showAddContact && (
+                    {!showAddContact && !editingContactId && (
                       <Button variant="outline" className="w-full" onClick={handleAddContact}>
                         <Plus className="size-4 mr-2" />
                         Add Contact
@@ -800,6 +993,27 @@ export default function ClientDetail() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Delete Contact Confirmation Dialog */}
+            <AlertDialog open={deleteContactId !== null} onOpenChange={() => setDeleteContactId(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Contact</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this contact? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteContactId && handleDeleteContact(deleteContactId)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {/* Activity Tab */}
             <TabsContent value="activity" className="flex-1 overflow-auto mt-0 h-full">
